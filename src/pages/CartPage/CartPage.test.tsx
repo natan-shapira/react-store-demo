@@ -1,4 +1,3 @@
-import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import CartPage from "./CartPage";
@@ -6,6 +5,7 @@ import { useCartStore } from "../../stores/useCartStore";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { CartItem } from "../../types";
 import userEvent from "@testing-library/user-event";
+import { formatPrice } from "../../utils/formatters";
 
 const cartItems: Record<number, CartItem> = {
   1: {
@@ -96,9 +96,9 @@ describe("CartPage", () => {
         renderCartPage();
 
         expect(screen.getByText(`(${totalItems} items)`)).toBeInTheDocument();
-        expect(screen.getByText(`Subtotal (${totalItems} items)`).nextElementSibling).toHaveTextContent(`$${subtotal.toFixed(2)}`);
+        expect(screen.getByText(`Subtotal (${totalItems} items)`).nextElementSibling).toHaveTextContent(formatPrice(subtotal));
         expect(screen.getByText("Shipping").nextElementSibling).toHaveTextContent("Free");
-        expect(screen.getByText("Total").nextElementSibling).toHaveTextContent(`$${subtotal.toFixed(2)}`);
+        expect(screen.getByText("Total").nextElementSibling).toHaveTextContent(formatPrice(subtotal));
     });
 
     it('should toggle the checkbox state when clicked', async () => {

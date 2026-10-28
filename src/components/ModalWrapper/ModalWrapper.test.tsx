@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom/vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -54,7 +53,7 @@ describe('ModalWrapper', () => {
         const { user } = renderModal();
         openModal();
 
-        await user.click(screen.getByRole('button', { name: 'Close' }));
+        await user.click(screen.getByRole('button', { name: 'Close dialog' }));
 
         expect(screen.queryByText('Modal body')).not.toBeInTheDocument();
     });

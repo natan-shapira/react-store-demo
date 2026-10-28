@@ -1,11 +1,11 @@
-import type { SigninData, User } from "../types";
+import { type SigninData, type User, } from "../types";
+import { ApiError } from "./ApiError";
 import { fetchWithAuth } from "./fetchWithAuth";
 
 interface AuthUser extends User {
     token: string;
 }
-
-const BASE_URL = "https://dummyjson.com/auth";
+const API_URL = `${import.meta.env.VITE_API_URL}/auth`;
 
 const toUser = (data: User): User => ({
     id: data.id,
@@ -16,7 +16,7 @@ const toUser = (data: User): User => ({
 });
 
 export const loginUser = async (credentials: SigninData): Promise<AuthUser> => {
-    const response = await fetchWithAuth(`${BASE_URL}/login`, {
+    const response = await fetchWithAuth(`${API_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -24,17 +24,17 @@ export const loginUser = async (credentials: SigninData): Promise<AuthUser> => {
     const data = await response.json();
 
     if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new ApiError(data.message || "Login failed", response.status);
     }
 
     return { ...toUser(data), token: data.accessToken };
 };
 
 export const fetchAuthUser = async (): Promise<User> => {
-    const response = await fetchWithAuth(`${BASE_URL}/me`);
+    const response = await fetchWithAuth(`${API_URL}/me`);
 
     if (!response.ok) {
-        throw new Error("Failed to fetch authenticated user");
+        throw new ApiError("Failed to fetch authenticated user", response.status);
     }
 
     return toUser(await response.json());

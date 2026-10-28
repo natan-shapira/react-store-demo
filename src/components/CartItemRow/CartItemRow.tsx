@@ -1,6 +1,7 @@
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CartItem } from "../../types";
+import { formatPrice } from "../../utils/formatters";
 
 interface CartItemRowProps {
   item: CartItem;
@@ -38,7 +39,7 @@ function CartItemRow({ item, selected, onToggleSelect, onIncrease, onDecrease, o
           {item.title}
         </Link>
         <p className="text-sm text-gray-500 capitalize">{item.category}</p>
-        <p className="text-sm text-gray-700 mt-1">${item.price.toFixed(2)} each</p>
+        <p className="text-sm text-gray-700 mt-1">{formatPrice(item.price)} each</p>
       </div>
 
       <div className="flex items-center border border-gray-300 rounded-lg">
@@ -50,7 +51,10 @@ function CartItemRow({ item, selected, onToggleSelect, onIncrease, onDecrease, o
         >
           <Minus className="w-4 h-4" />
         </button>
-        <span className="w-10 text-center font-medium">{item.quantity}</span>
+        <span aria-live="polite" className="w-10 text-center font-medium">
+          <span className="sr-only">Quantity: </span>
+          {item.quantity}
+        </span>
         <button
           type="button"
           onClick={() => onIncrease(item.id)}
@@ -62,7 +66,7 @@ function CartItemRow({ item, selected, onToggleSelect, onIncrease, onDecrease, o
       </div>
 
       <p className="w-24 text-end font-semibold text-gray-900">
-        ${(item.price * item.quantity).toFixed(2)}
+        {formatPrice(item.price * item.quantity)}
       </p>
 
       <button

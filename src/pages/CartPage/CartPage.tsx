@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import CartItemRow from "../../components/CartItemRow/CartItemRow";
 import { useCartStore } from "../../stores/useCartStore";
+import { formatPrice } from "../../utils/formatters";
 
 function CartPage() {
   const navigate = useNavigate();
@@ -128,15 +129,15 @@ function CartPage() {
               <dt className="text-gray-600">
                 Subtotal ({selectedCount} {selectedCount === 1 ? "item" : "items"})
               </dt>
-              <dd className="font-medium">${subtotal.toFixed(2)}</dd>
+              <dd className="font-medium">{formatPrice(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-gray-600">Shipping</dt>
-              <dd className="font-medium">{shipping === 0 ? "Free" : `$${(+shipping).toFixed(2)}`}</dd>
+              <dd className="font-medium">{shipping === 0 ? "Free" : formatPrice(shipping)}</dd>
             </div>
             <div className="flex justify-between border-t border-gray-200 pt-3 text-base">
               <dt className="font-bold text-gray-900">Total</dt>
-              <dd className="font-bold text-gray-900">${total.toFixed(2)}</dd>
+              <dd className="font-bold text-gray-900">{formatPrice(total)}</dd>
             </div>
           </dl>
 

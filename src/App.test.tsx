@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
@@ -114,9 +113,30 @@ describe('App', () => {
             expect(screen.getByRole('link', { name: 'ReactShop' })).toBeInTheDocument();
         });
 
-        it.todo('should show the not found page for an unknown path');
-        it.todo('should show the not found page to a guest without redirecting to /auth');
-        it.todo('should show the not found page for an unknown nested path (e.g. /products/5/extra)');
+        it('should show the not found page for an unknown path', () => {
+            logIn();
+            renderAt('/does-not-exist');
+
+            expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+            expect(screen.getByText('/does-not-exist')).toBeInTheDocument();
+            expect(window.location.pathname).toBe('/does-not-exist');
+        });
+
+        it('should show the not found page to a guest without redirecting to /auth', () => {
+            renderAt('/does-not-exist');
+
+            expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+            expect(screen.queryByRole('heading', { name: 'Welcome Back' })).not.toBeInTheDocument();
+            expect(window.location.pathname).toBe('/does-not-exist');
+        });
+
+        it('should show the not found page for an unknown nested path (e.g. /products/5/extra)', () => {
+            logIn();
+            renderAt('/products/5/extra');
+
+            expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+            expect(screen.queryByRole('heading', { name: 'Wireless Headphones' })).not.toBeInTheDocument();
+        });
     });
 
     describe('Authentication check', () => {

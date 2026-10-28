@@ -1,4 +1,3 @@
-//import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
@@ -8,7 +7,7 @@ import userEvent from '@testing-library/user-event';
 const wrongUrl = '/wrong'
 const renderNotFoundPage = (options = { hasHistory: true }) => {
     const user = userEvent.setup();
-    const entries = options.hasHistory ? ['/test', wrongUrl] : [wrongUrl];
+    const entries = options.hasHistory ? ['/testPage', wrongUrl] : [wrongUrl];
     const index = options.hasHistory ? 1 : 0;
     render(
         <MemoryRouter initialEntries={entries} initialIndex={index}>
@@ -47,8 +46,8 @@ describe('NotFoundPage', () => {
         });
         it('should navigate to the home page when clicked', async () => {
             const {user} = renderNotFoundPage({ hasHistory: false });
-            const homeButton = screen.getByRole('button', { name: /back to home/i });
-            await user.click(homeButton)
+            const homeLink = screen.getByRole('link', { name: /back to home/i });
+            await user.click(homeLink)
             expect(screen.getByTestId('home-page')).toBeInTheDocument();
         });
     });

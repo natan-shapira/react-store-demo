@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -8,7 +7,6 @@ import { useCartStore } from '../../stores/useCartStore';
 describe('CheckoutPage', () => {
     
     beforeEach(() => {
-        //localStorage.clear();
         useCartStore.setState({ items: {} });
     });
 

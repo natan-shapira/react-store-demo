@@ -14,7 +14,7 @@ function Navbar() {
     const updateUser = useAuthStore((state) => state.updateUser);
     const logout = useAuthStore((state) => state.logout);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [imageError, setImageError] = useState<string | null>(null);
     
     const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -34,7 +34,12 @@ function Navbar() {
         updateUser(user.id, await compressImage(file));
       } catch {
         setImageError("Could not load this image. Please choose a different file.");
-        setTimeout(() => setImageError(null), 5000);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        } 
+        timeoutRef.current = setTimeout(() => {
+          setImageError(null);
+        }, 5000);
       }
     };
   return (
@@ -86,7 +91,7 @@ function Navbar() {
         {user && (
           <div className="flex items-center gap-4 relative">
             {imageError && (
-              <div className="absolute top-16 right-0 bg-red-50 border border-red-200 text-red-600 text-xs px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 animate-fade-in z-50 whitespace-nowrap">
+              <div role="alert" className="absolute top-16 right-0 bg-red-50 border border-red-200 text-red-600 text-xs px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 animate-fade-in z-50 whitespace-nowrap">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{imageError}</span>
               </div>
@@ -94,33 +99,37 @@ function Navbar() {
             {/* פעולות משתמש */}
             <div className="flex items-center gap-3 bg-gray-50/80 p-1.5 pl-3 rounded-2xl border border-gray-100">
               {/* תמונת פרופיל / אוואטר עם אפקט הדרכה והעלאת קובץ */}
-              <div 
+              <button 
+                type="button"
+                aria-label="Change profile picture"
                 className="relative group cursor-pointer" 
                 onClick={() => fileInputRef.current?.click()}
                 title="Click to change profile picture"              
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold border-2 border-white shadow-xs overflow-hidden">
+                <span className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold border-2 border-white shadow-xs overflow-hidden">
                   {user.image ? (
                     <img src={user.image} alt="Profile" className="w-full h-full object-cover" />
                   ) : (
                     <span>{user.firstName?.[0] || user.username[0]}</span>
                   )}
-                </div>
+                </span>
                 {/* Hover Camera Overlay */}
-                <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <Camera className="w-4 h-4 text-white" />
-                </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-              </div>
+                </span>
+              </button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+              />
             </div>
             {/* Logout Button */}
             <button
+              type="button"
+              aria-label="Logout"
               onClick={logout}
               className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200 cursor-pointer"              title="Logout"
             >

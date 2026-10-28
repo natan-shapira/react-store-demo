@@ -3,6 +3,7 @@ import { useCartStore } from "../../stores/useCartStore";
 import { useModalStore } from "../../stores/useModalStore";
 import type { Product } from "../../types";
 import { useState } from "react";
+import { formatPrice } from "../../utils/formatters";
 
 interface ProductModalContentProps {
     product: Product;
@@ -61,23 +62,26 @@ function ProductModalContent({product}: ProductModalContentProps) {
                 <div>
                     <span className="text-xs text-gray-400 block">Unit price</span>
                     <span className="text-3xl font-extrabold text-gray-900">
-                        ${product.price.toFixed(2)}
+                        {formatPrice(product.price)}
                     </span>
                 </div>
 
                 {/* בקרת כמות (Quantity Selector) */}
                 <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-1">
                     <button
+                        type="button"
                         onClick={handleDecrease}
                         className="p-2 text-gray-600 hover:bg-white rounded-lg transition-colors shadow-xs cursor-pointer"
                         aria-label="Decrease quantity"
                     >
                         <Minus className="w-4 h-4" />
                     </button>
-                    <span className="w-10 text-center font-bold text-gray-800">
+                    <span aria-live="polite" className="w-10 text-center font-bold text-gray-800">
+                        <span className="sr-only">Quantity: </span>
                         {quantity}
                     </span>
                     <button
+                        type="button"
                         onClick={handleIncrease}
                         className="p-2 text-gray-600 hover:bg-white rounded-lg transition-colors shadow-xs cursor-pointer"
                         aria-label="Increase quantity"
@@ -92,11 +96,12 @@ function ProductModalContent({product}: ProductModalContentProps) {
                 <div>
                     <span className="text-xs text-gray-400 block">Total</span>
                     <span className="text-xl font-bold text-blue-600">
-                        ${(product.price * quantity).toFixed(2)}
+                        {formatPrice(product.price * quantity)}
                     </span>
                 </div>
                 
                 <button
+                    type="button"
                     onClick={() => {
                         addItem({
                             ...product,

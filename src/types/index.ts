@@ -37,4 +37,3 @@ export type SignupData = Omit<User, "id" | "image"> & {
 export type SignupFormData = SignupData & {
   confirmPassword: string;
 };
-

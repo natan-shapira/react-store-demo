@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useProduct } from "../../api/products";
 import { useCartStore } from "../../stores/useCartStore";
 import { ShoppingBag, ArrowLeft, Plus, Minus, CheckCircle2 } from "lucide-react";
+import { formatPrice } from "../../utils/formatters";
 
-export function ProductPage() {
+function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: product, isLoading, error } = useProduct(id!);
@@ -41,6 +42,7 @@ export function ProductPage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4 text-center">
         <p className="text-red-500 font-medium">Failed to load data, or the product doesn't exist.</p>
         <button
+          type="button"
           onClick={() => navigate(-1)}
           className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl transition-colors cursor-pointer text-sm"
         >
@@ -54,6 +56,7 @@ export function ProductPage() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* כפתור חזרה */}
       <button
+        type="button"
         onClick={() => navigate(-1)}
         className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition-colors mb-8 cursor-pointer group"
       >
@@ -84,7 +87,7 @@ export function ProductPage() {
             </h1>
             
             <div className="text-3xl font-bold text-blue-600">
-              ${product.price.toFixed(2)}
+              {formatPrice(product.price)}
             </div>
 
             <p className="text-gray-600 text-base leading-relaxed pt-2 border-t border-gray-100">
@@ -113,16 +116,19 @@ export function ProductPage() {
               {/* בקרת כמות */}
               <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-1">
                 <button
+                  type="button"
                   onClick={handleDecrease}
                   className="p-2 text-gray-600 hover:bg-white rounded-lg transition-colors shadow-xs cursor-pointer"
                   aria-label="Decrease quantity"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="w-10 text-center font-bold text-gray-800">
+                <span aria-live="polite" className="w-10 text-center font-bold text-gray-800">
+                  <span className="sr-only">Quantity: </span>
                   {quantity}
                 </span>
                 <button
+                  type="button"
                   onClick={handleIncrease}
                   className="p-2 text-gray-600 hover:bg-white rounded-lg transition-colors shadow-xs cursor-pointer"
                   aria-label="Increase quantity"
@@ -134,11 +140,12 @@ export function ProductPage() {
 
             {/* כפתור הוספה לעגלה */}
             <button
+              type="button"
               onClick={handleAddToCart}
               className="w-full py-4 rounded-2xl font-medium text-base flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer bg-blue-600 hover:bg-blue-700 text-white active:scale-98"
             >
               <ShoppingBag className="w-5 h-5" />
-              {existingQuantity > 0 ? "Add more to cart" : "Add to cart"} • ${(product.price * quantity).toFixed(2)}
+              {existingQuantity > 0 ? "Add more to cart" : "Add to cart"} • {formatPrice(product.price * quantity)}
             </button>
           </div>
           

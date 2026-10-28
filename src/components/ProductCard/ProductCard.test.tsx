@@ -1,5 +1,4 @@
-import '@testing-library/jest-dom/vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -31,6 +30,8 @@ const renderCard = () => {
     return { user };
 };
 
+const isHiddenFromScreenReaders = (element: HTMLElement) => element.closest('[aria-hidden="true"]') !== null;
+
 const getQuantity = () => screen.getByLabelText('Decrease quantity').nextElementSibling;
 const getAddButton = () => screen.getByRole('button', { name: /add (more )?to cart/i });
 
@@ -44,11 +45,31 @@ describe('ProductCard', () => {
         it('should show the image, title, description, category and price', () => {
             renderCard();
 
-            expect(screen.getByRole('img', { name: 'Wireless Headphones' })).toHaveAttribute('src', 'headphones.jpg');
+            expect(screen.getByAltText('Wireless Headphones')).toHaveAttribute('src', 'headphones.jpg');
             expect(screen.getByRole('heading', { name: 'Wireless Headphones' })).toBeInTheDocument();
             expect(screen.getByText('Noise cancelling headphones')).toBeInTheDocument();
             expect(screen.getByText('electronics')).toBeInTheDocument();
             expect(screen.getByText('$99.99')).toBeInTheDocument();
+        });
+
+        it('should keep the category readable by screen readers', () => {
+            renderCard();
+
+            expect(isHiddenFromScreenReaders(screen.getByText('electronics'))).toBe(false);
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('should expose a single accessible link to the product page', () => {
+            renderCard();
+
+            expect(screen.getAllByRole('link', { name: 'Wireless Headphones' })).toHaveLength(1);
+        });
+
+        it('should keep the image link out of the tab order', () => {
+            renderCard();
+
+            expect(screen.getByAltText('Wireless Headphones').closest('a')).toHaveAttribute('tabindex', '-1');
         });
     });
 
@@ -56,7 +77,7 @@ describe('ProductCard', () => {
         it('should navigate to the product page when the image is clicked', async () => {
             const { user } = renderCard();
 
-            await user.click(screen.getByRole('img', { name: 'Wireless Headphones' }));
+            await user.click(screen.getByAltText('Wireless Headphones'));
 
             expect(screen.getByRole('heading', { name: 'Product Details' })).toBeInTheDocument();
         });
@@ -64,7 +85,8 @@ describe('ProductCard', () => {
         it('should navigate to the product page when the title is clicked', async () => {
             const { user } = renderCard();
 
-            await user.click(screen.getByRole('heading', { name: 'Wireless Headphones' }));
+            const title = screen.getByRole('heading', { name: 'Wireless Headphones' });
+            await user.click(within(title).getByRole('link'));
 
             expect(screen.getByRole('heading', { name: 'Product Details' })).toBeInTheDocument();
         });
@@ -159,6 +181,12 @@ describe('ProductCard', () => {
             renderCard();
 
             expect(screen.getByText('4 in cart')).toBeInTheDocument();
+        });
+
+        it('should keep the in-cart badge visible to screen readers', () => {
+            renderCard();
+
+            expect(isHiddenFromScreenReaders(screen.getByText('4 in cart'))).toBe(false);
         });
 
         it('should show "Add more to cart"', () => {

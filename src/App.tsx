@@ -11,8 +11,26 @@ import { useAuthStore } from "./stores/useAuthStore";
 import { useEffect } from "react";
 import CheckoutPage from "./pages/CheckoutPage/CheckoutPage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
+import { ApiError } from "./api/ApiError";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      retry: (failureCount, error: unknown) => {
+        // בודקים האם זו שגיאת API מוכרת שיש לה סטטוס קוד
+        if (error instanceof ApiError) {
+          // אם זו שגיאת קליינט בטווח 400-499 (כמו 404), אל תנסה שוב בכלל!
+          if (error.status >= 400 && error.status < 500) {
+            return false;
+          }
+        }
+        return failureCount < 2;
+      },
+      refetchOnWindowFocus: false,
+    }
+  }
+});
 
 function App() {
 

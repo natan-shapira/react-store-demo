@@ -1,4 +1,3 @@
-import '@testing-library/jest-dom/vitest';
 import { act, render, screen } from '@testing-library/react';
 import userEvent, { type UserEvent } from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';

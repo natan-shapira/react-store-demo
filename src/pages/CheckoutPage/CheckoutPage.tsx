@@ -2,6 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 import { useCartStore } from "../../stores/useCartStore";
 import type { CartItem } from "../../types";
+import { formatPrice } from "../../utils/formatters";
 
 const EMPTY_ARRAY: number[] = [];
 
@@ -36,13 +37,13 @@ function CheckoutPage() {
                             <span className="font-semibold">
                                 {item.title} <span className="text-gray-500 font-normal">× {item.quantity}</span>
                             </span>
-                            <span className="text-gray-600">${(item.price * item.quantity).toFixed(2)}</span>
+                            <span className="text-gray-600">{formatPrice(item.price * item.quantity)}</span>
                         </li>
                     ))}
                 </ul>
                 <div className="flex justify-between border-t border-gray-200 pt-4 mt-2 text-lg font-bold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{formatPrice(total)}</span>
                 </div>
             </div>
         </div>
