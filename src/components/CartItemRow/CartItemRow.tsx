@@ -1,7 +1,9 @@
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CartItem } from "../../types";
 import { formatPrice } from "../../utils/formatters";
+import PlusButton from "../PlusButton/PlusButton";
+import MinusButton from "../MinusButton/MinusButton";
 
 interface CartItemRowProps {
   item: CartItem;
@@ -12,9 +14,18 @@ interface CartItemRowProps {
   onRemove: (id: number) => void;
 }
 
-function CartItemRow({ item, selected, onToggleSelect, onIncrease, onDecrease, onRemove }: CartItemRowProps) {
+function CartItemRow({
+  item,
+  selected,
+  onToggleSelect,
+  onIncrease,
+  onDecrease,
+  onRemove,
+}: CartItemRowProps) {
   return (
-    <li className={`flex items-center gap-4 py-4 transition-opacity ${selected ? "" : "opacity-60"}`}>
+    <li
+      className={`flex items-center gap-4 py-4 transition-opacity ${selected ? "" : "opacity-60"}`}
+    >
       <input
         type="checkbox"
         checked={selected}
@@ -42,27 +53,13 @@ function CartItemRow({ item, selected, onToggleSelect, onIncrease, onDecrease, o
         <p className="text-sm text-gray-700 mt-1">{formatPrice(item.price)} each</p>
       </div>
 
-      <div className="flex items-center border border-gray-300 rounded-lg">
-        <button
-          type="button"
-          onClick={() => onDecrease(item.id)}
-          className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-s-lg"
-          aria-label="Decrease quantity"
-        >
-          <Minus className="w-4 h-4" />
-        </button>
+      <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-1">
+        <MinusButton onClick={() => onDecrease(item.id)} size="md" />
         <span aria-live="polite" className="w-10 text-center font-medium">
           <span className="sr-only">Quantity: </span>
           {item.quantity}
         </span>
-        <button
-          type="button"
-          onClick={() => onIncrease(item.id)}
-          className="w-9 h-9 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-e-lg"
-          aria-label="Increase quantity"
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+        <PlusButton onClick={() => onIncrease(item.id)} size="md" />
       </div>
 
       <p className="w-24 text-end font-semibold text-gray-900">

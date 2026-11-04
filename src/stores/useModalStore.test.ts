@@ -1,60 +1,66 @@
-import { createElement } from 'react';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { useModalStore } from './useModalStore';
+import { createElement } from "react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { useModalStore } from "./useModalStore";
 
-const firstContent = createElement('p', null, 'First modal');
-const secondContent = createElement('p', null, 'Second modal');
+const firstContent = createElement("p", null, "First modal");
+const secondContent = createElement("p", null, "Second modal");
 
-describe('useModalStore', () => {
-    beforeEach(() => {
-        useModalStore.setState(useModalStore.getInitialState(), true);
-    });
+describe("useModalStore", () => {
+  beforeEach(() => {
+    useModalStore.setState(useModalStore.getInitialState(), true);
+  });
 
-    it('should start with no content', () => {
-        expect(useModalStore.getInitialState().content).toBeNull();
-    });
+  it("should start with no content and an empty title", () => {
+    const { content, title } = useModalStore.getInitialState();
 
-    it('should set the content when openModal is called', () => {
-        useModalStore.getState().openModal(firstContent);
+    expect(content).toBeNull();
+    expect(title).toBe("");
+  });
 
-        expect(useModalStore.getState().content).toBe(firstContent);
-    });
+  it("should set the content and title when openModal is called", () => {
+    useModalStore.getState().openModal(firstContent, "First title");
 
-    it('should replace the content when openModal is called again', () => {
-        useModalStore.getState().openModal(firstContent);
-        useModalStore.getState().openModal(secondContent);
+    expect(useModalStore.getState().content).toBe(firstContent);
+    expect(useModalStore.getState().title).toBe("First title");
+  });
 
-        expect(useModalStore.getState().content).toBe(secondContent);
-    });
+  it("should replace the content and title when openModal is called again", () => {
+    useModalStore.getState().openModal(firstContent, "First title");
+    useModalStore.getState().openModal(secondContent, "Second title");
 
-    it('should clear the content when closeModal is called', () => {
-        useModalStore.getState().openModal(firstContent);
+    expect(useModalStore.getState().content).toBe(secondContent);
+    expect(useModalStore.getState().title).toBe("Second title");
+  });
 
-        useModalStore.getState().closeModal();
+  it("should clear the content and title when closeModal is called", () => {
+    useModalStore.getState().openModal(firstContent, "First title");
 
-        expect(useModalStore.getState().content).toBeNull();
-    });
+    useModalStore.getState().closeModal();
 
-    it('should keep the content null when closeModal is called on a closed modal', () => {
-        useModalStore.getState().closeModal();
+    expect(useModalStore.getState().content).toBeNull();
+    expect(useModalStore.getState().title).toBe("");
+  });
 
-        expect(useModalStore.getState().content).toBeNull();
-    });
+  it("should keep the content null when closeModal is called on a closed modal", () => {
+    useModalStore.getState().closeModal();
 
-    it('should accept plain text as content', () => {
-        useModalStore.getState().openModal('Simple message');
+    expect(useModalStore.getState().content).toBeNull();
+  });
 
-        expect(useModalStore.getState().content).toBe('Simple message');
-    });
+  it("should accept plain text as content", () => {
+    useModalStore.getState().openModal("Simple message", "Notice");
 
-    it('should notify subscribers when the content changes', () => {
-        const contents: unknown[] = [];
-        const unsubscribe = useModalStore.subscribe((state) => contents.push(state.content));
+    expect(useModalStore.getState().content).toBe("Simple message");
+  });
 
-        useModalStore.getState().openModal(firstContent);
-        useModalStore.getState().closeModal();
-        unsubscribe();
+  it("should notify subscribers when the content changes", () => {
+    const contents: unknown[] = [];
+    const unsubscribe = useModalStore.subscribe((state) => contents.push(state.content));
 
-        expect(contents).toEqual([firstContent, null]);
-    });
+    useModalStore.getState().openModal(firstContent, "First title");
+    useModalStore.getState().closeModal();
+    unsubscribe();
+
+    expect(contents).toEqual([firstContent, null]);
+  });
 });

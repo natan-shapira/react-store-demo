@@ -1,7 +1,4 @@
-/**
- * מעצב מספר למחצית/מחיר נקי עם סימן מטבע מוגדר
- */
+// Formats a price in US dollars, e.g. 12.5 → "$12.50"
 export const formatPrice = (price: number): string => {
-  // תוכל להתאים את הפורמט לסימן המטבע שבו הפרויקט משתמש (למשל $ או ₪)
   return `$${price.toFixed(2)}`;
 };

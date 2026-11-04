@@ -5,6 +5,7 @@ import HomePage from "./HomePage";
 import { render, screen } from "@testing-library/react";
 import { useCategories, useProductsList } from "../../api/products";
 import type { Category, Product } from "../../types";
+import { createProduct } from "../../test/factories";
 
 vi.mock("../../api/products", () => ({
   PRODUCTS_PER_PAGE: 15,
@@ -17,17 +18,8 @@ const categories: Category[] = [
   { slug: "laptops", name: "Laptops", url: "" },
 ];
 
-const createProduct = (id: number, title: string, category: string): Product => ({
-  id,
-  title,
-  category,
-  price: 10,
-  description: "",
-  image: "",
-});
-
-const lipstick = createProduct(1, "Red Lipstick", "beauty");
-const laptop = createProduct(2, "MacBook Pro", "laptops");
+const lipstick = createProduct({ id: 1, title: "Red Lipstick", category: "beauty" });
+const laptop = createProduct({ id: 2, title: "MacBook Pro", category: "laptops" });
 
 const productsByCategory: Record<string, Product[]> = {
   all: [lipstick, laptop],
@@ -55,7 +47,7 @@ const renderHomePage = (url = "/") => {
           }
         />
       </Routes>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
   return { user };
 };
@@ -64,11 +56,13 @@ const getSearch = () => screen.getByTestId("location").textContent;
 
 describe("HomePage", () => {
   beforeEach(() => {
-    vi.mocked(useCategories).mockReturnValue({ data: categories } as unknown as ReturnType<typeof useCategories>);
+    vi.mocked(useCategories).mockReturnValue({ data: categories } as unknown as ReturnType<
+      typeof useCategories
+    >);
     vi.mocked(useProductsList).mockImplementation((category) => {
       const products = productsByCategory[category ?? "all"];
       return {
-        data: { products, total: products.length },
+        data: { products, total: products?.length },
         isLoading: false,
         isPlaceholderData: false,
         error: null,

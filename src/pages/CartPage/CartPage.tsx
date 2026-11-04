@@ -4,13 +4,26 @@ import { Link, useNavigate } from "react-router-dom";
 import CartItemRow from "../../components/CartItemRow/CartItemRow";
 import { useCartStore } from "../../stores/useCartStore";
 import { formatPrice } from "../../utils/formatters";
+import { useShallow } from "zustand/shallow";
 
 function CartPage() {
   const navigate = useNavigate();
-  const {  items : cartItems, updateQuantity, removeItem, clearCart } = useCartStore();
+  const {
+    items: cartItems,
+    updateQuantity,
+    removeItem,
+    clearCart,
+  } = useCartStore(
+    useShallow((state) => ({
+      items: state.items,
+      updateQuantity: state.updateQuantity,
+      removeItem: state.removeItem,
+      clearCart: state.clearCart,
+    }))
+  );
   const items = Object.values(cartItems);
 
-  // שומרים את הפריטים שבוטלה בחירתם, כך שפריט חדש בסל מסומן כברירת מחדל
+  // Tracks the unselected items, so a newly added item is selected by default
   const [unselectedIds, setUnselectedIds] = useState<Set<number>>(new Set());
   const isSelected = (id: number) => !unselectedIds.has(id);
   const selectedItems = items.filter((item) => isSelected(item.id));
@@ -39,10 +52,12 @@ function CartPage() {
   };
 
   const handleIncrease = (id: number) => {
-    updateQuantity(id, cartItems[id].quantity + 1);
+    //updateQuantity(id, cartItems[id].quantity + 1);
+    updateQuantity(id, cartItems[id]?.quantity ? cartItems[id].quantity + 1 : 1);
   };
   const handleDecrease = (id: number) => {
-    updateQuantity(id, cartItems[id].quantity - 1);
+    //updateQuantity(id, cartItems[id].quantity - 1);
+    updateQuantity(id, cartItems[id]?.quantity ? Math.max(0, cartItems[id].quantity - 1) : 0);
   };
 
   const handleRemove = (id: number) => {
@@ -52,7 +67,7 @@ function CartPage() {
     clearCart();
   };
   const handleCheckout = () => {
-    navigate("/checkout", { state: { selectedItemIds: selectedItems.map(item => item.id) } });
+    navigate("/checkout", { state: { selectedItemIds: selectedItems.map((item) => item.id) } });
   };
 
   if (items.length === 0) {
@@ -149,10 +164,7 @@ function CartPage() {
           >
             Proceed to checkout
           </button>
-          <Link
-            to="/"
-            className="block text-center mt-3 text-sm text-blue-600 hover:underline"
-          >
+          <Link to="/" className="block text-center mt-3 text-sm text-blue-600 hover:underline">
             Continue shopping
           </Link>
         </aside>

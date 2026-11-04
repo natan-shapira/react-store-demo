@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "../../types";
-import { Eye, ShoppingBag, Plus, Minus, CheckCircle2 } from "lucide-react";
+import { Eye, ShoppingBag, CheckCircle2 } from "lucide-react";
 import { useModalStore } from "../../stores/useModalStore";
 import { useCartStore } from "../../stores/useCartStore";
 import ProductModalContent from "../../modals/ProductModalContent/ProductModalContent";
 import { formatPrice } from "../../utils/formatters";
+import PlusButton from "../PlusButton/PlusButton";
+import MinusButton from "../MinusButton/MinusButton";
 
 interface ProductCardProps {
   product: Product;
@@ -16,10 +18,8 @@ function ProductCard({ product }: ProductCardProps) {
   const addToCart = useCartStore((state) => state.addItem);
   const openModal = useModalStore((state) => state.openModal);
 
-  // שליפת הכמות הקיימת בסל עבור המוצר הנוכחי
-  const existingQuantity = useCartStore((state) => 
-    state.items[Number(product.id)]?.quantity || 0
-  );
+  // Quantity of this product that is already in the cart
+  const existingQuantity = useCartStore((state) => state.items[Number(product.id)]?.quantity || 0);
 
   const handleIncrease = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,18 +32,24 @@ function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border flex flex-col overflow-hidden hover:shadow-md transition-all group relative ${
-      existingQuantity > 0 ? "border-emerald-300 ring-1 ring-emerald-200/50" : "border-gray-200"
-    }`}>
-      
-      {/* אזור התמונה עם אפקט זום קל ומעטפת לחיצה */}
+    <div
+      className={`bg-white rounded-2xl shadow-sm border flex flex-col overflow-hidden hover:shadow-md transition-all group relative ${
+        existingQuantity > 0 ? "border-emerald-300 ring-1 ring-emerald-200/50" : "border-gray-200"
+      }`}
+    >
+      {/* Image area with a zoom effect on hover */}
       <div className="relative h-52 w-full bg-gray-50 overflow-hidden">
         {/* The title link already leads to the product, so this duplicate is hidden from keyboard and screen readers */}
-        <Link to={`/products/${product.id}`} tabIndex={-1} aria-hidden="true" className="block h-full w-full">
-          <img 
-            src={product.image} 
-            alt={product.title} 
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+        <Link
+          to={`/products/${product.id}`}
+          tabIndex={-1}
+          aria-hidden="true"
+          className="block h-full w-full"
+        >
+          <img
+            src={product.image}
+            alt={product.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </Link>
 
@@ -52,7 +58,7 @@ function ProductCard({ product }: ProductCardProps) {
           {product.category}
         </span>
 
-        {/* תג קטן המציג את הכמות בסל על גבי התמונה אם המוצר קיים בעגלה */}
+        {/* In-cart badge, shown only when the product is already in the cart */}
         {existingQuantity > 0 && (
           <div className="pointer-events-none absolute top-3 left-3 bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 animate-fade-in">
             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -61,12 +67,12 @@ function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
 
-      {/* תוכן הכרטיס */}
+      {/* Card content */}
       <div className="p-4 flex flex-col flex-grow justify-between">
         <div>
-          {/* כותרת המוצר - לחיצה תעביר לעמוד פרטי מוצר */}
+          {/* Product title, links to the product page */}
           <h3 className="font-semibold text-gray-800 line-clamp-1">
-            <Link 
+            <Link
               to={`/products/${product.id}`}
               className="hover:text-blue-600 transition-colors focus-visible:outline-2 focus-visible:outline-blue-500 rounded-xs"
             >
@@ -78,13 +84,13 @@ function ProductCard({ product }: ProductCardProps) {
 
         <div className="mt-4 flex items-center justify-between">
           <span className="text-xl font-bold text-gray-900">{formatPrice(product.price)}</span>
-          
-          {/* כפתור תצוגה מהירה בפופאפ */}
+
+          {/* Quick view opens the product in a modal */}
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              openModal(<ProductModalContent product={product} />);
+              openModal(<ProductModalContent product={product} />, product.title);
             }}
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500"
             title="Quick view"
@@ -93,39 +99,24 @@ function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
 
-        {/* בקרת כמות וכפתור הוספה לעגלה */}
+        {/* Quantity selector and add to cart */}
         <div className="mt-4 space-y-3">
-          {/* בורר כמות */}
           <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5">
             <span className="text-xs text-gray-500 font-medium">Quantity:</span>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleDecrease}
-                className="p-1.5 text-gray-600 hover:bg-white rounded-lg transition-colors shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500"
-                aria-label="Decrease quantity"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              
-              {/* כמות עם התאמה לנגישות קוראי מסך */}
+              <MinusButton onClick={handleDecrease} />
+
+              {/* The sr-only label lets screen readers announce the quantity */}
               <span aria-live="polite" className="w-6 text-center font-bold text-sm text-gray-800">
                 <span className="sr-only">Quantity: </span>
                 {quantity}
               </span>
 
-              <button
-                type="button"
-                onClick={handleIncrease}
-                className="p-1.5 text-gray-600 hover:bg-white rounded-lg transition-colors shadow-xs cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500"
-                aria-label="Increase quantity"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
+              <PlusButton onClick={handleIncrease} />
             </div>
           </div>
 
-          {/* כפתור הוספה לעגלה עם הכמות הנבחרת */}
+          {/* Adds the selected quantity to the cart */}
           <button
             type="button"
             onClick={() => {
@@ -133,11 +124,11 @@ function ProductCard({ product }: ProductCardProps) {
                 ...product,
                 quantity,
               });
-              setQuantity(1); // איפוס הכמות ל-1 לאחר ההוספה
+              setQuantity(1);
             }}
             className={`w-full py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-98 cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500 ${
-              existingQuantity > 0 
-                ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+              existingQuantity > 0
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                 : "bg-blue-600 hover:bg-blue-700 text-white"
             }`}
           >

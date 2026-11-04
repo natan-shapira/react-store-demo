@@ -3,10 +3,9 @@ import { persist } from "zustand/middleware";
 import type { CartItem } from "../types";
 
 interface CartState {
-  // אובייקט שמחזיק את הפריטים לפי מזהה (ID) המוצר כמופתח
+  // Items keyed by product id
   items: Record<number, CartItem>;
-  
-  // פעולות על העגלה
+
   addItem: (product: CartItem) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantity: number) => void;
@@ -18,14 +17,13 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: {},
 
-      // הוספה או עדכון כמות של מוצר לעגלה
+      // Adds a product, or increases its quantity if it is already in the cart
       addItem: (product) => {
         const currentItems = get().items;
         const productId = Number(product.id);
         const existingItem = currentItems[productId];
 
         if (existingItem) {
-          // אם המוצר כבר קיים, נעדכן את הכמות בהתאם למה שנבחר
           set({
             items: {
               ...currentItems,
@@ -36,7 +34,6 @@ export const useCartStore = create<CartState>()(
             },
           });
         } else {
-          // אם המוצר חדש בעגלה, נוסיף אותו
           set({
             items: {
               ...currentItems,
@@ -46,18 +43,16 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      // הסרת מוצר מהעגלה לפי ID
       removeItem: (productId) => {
         const currentItems = { ...get().items };
         delete currentItems[productId];
         set({ items: currentItems });
       },
 
-      // עדכון ישיר של כמות לפריט מסוים
       updateQuantity: (productId, quantity) => {
         const currentItems = get().items;
         if (quantity <= 0) {
-          // אם הכמות ירדה ל-0 או פחות, נסיר את המוצר
+          // A quantity of 0 or less removes the product
           const updatedItems = { ...currentItems };
           delete updatedItems[productId];
           set({ items: updatedItems });
@@ -77,11 +72,10 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      // ריקון מלא של העגלה
       clearCart: () => set({ items: {} }),
     }),
     {
-      name: "cart-storage", // שם המפתח ב-localStorage
+      name: "cart-storage", // localStorage key
     }
   )
 );
