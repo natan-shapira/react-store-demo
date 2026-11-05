@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { shouldRetry } from "./shouldRetry";
+import { isRetryableError, shouldRetry } from "./shouldRetry";
 import { ApiError } from "./ApiError";
+
+describe("isRetryableError", () => {
+  it.each([
+    ["a network error", new TypeError("Failed to fetch"), true],
+    ["a 5xx error", new ApiError("Server error", 503), true],
+    ["a 4xx error", new ApiError("Not found", 404), false],
+    ["an invalid response body", new ApiError("Failed to load products", 200), false],
+  ])("should return %s → %s", (_, error, expected) => {
+    expect(isRetryableError(error)).toBe(expected);
+  });
+});
 
 describe("shouldRetry", () => {
   it.each([400, 401, 404])("should not retry a %i client error", (status) => {

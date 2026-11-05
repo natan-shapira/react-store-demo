@@ -6,11 +6,13 @@ import {
   CartSkeleton,
   CheckoutSkeleton,
   HomeSkeleton,
+  ProductGridSkeleton,
   ProductSkeleton,
 } from "./PageSkeletons";
 
 const skeletons: { name: string; Skeleton: ComponentType; label: string }[] = [
   { name: "HomeSkeleton", Skeleton: HomeSkeleton, label: "Loading products" },
+  { name: "ProductGridSkeleton", Skeleton: ProductGridSkeleton, label: "Loading products" },
   { name: "ProductSkeleton", Skeleton: ProductSkeleton, label: "Loading product" },
   { name: "CartSkeleton", Skeleton: CartSkeleton, label: "Loading cart" },
   { name: "CheckoutSkeleton", Skeleton: CheckoutSkeleton, label: "Loading checkout" },

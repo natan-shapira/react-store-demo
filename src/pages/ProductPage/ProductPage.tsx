@@ -1,31 +1,25 @@
-import { useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useProduct } from "../../api/products";
-import { useCartStore } from "../../stores/useCartStore";
+import { useCartItemQuantity, useCartStore } from "../../stores/useCartStore";
 import { ShoppingBag, ArrowLeft, CheckCircle2 } from "lucide-react";
 import { formatPrice } from "../../utils/formatters";
-import PlusButton from "../../components/PlusButton/PlusButton";
-import MinusButton from "../../components/MinusButton/MinusButton";
+import { useQuantity } from "../../hooks/useQuantity";
+import QuantitySelector from "../../components/QuantitySelector/QuantitySelector";
+import { ProductSkeleton } from "../../components/PageSkeletons/PageSkeletons";
+import QueryError from "../../components/QueryError/QueryError";
 
 function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: product, isLoading, error } = useProduct(id!);
+  const { data: product, isLoading, error, refetch } = useProduct(id!);
 
   const location = useLocation();
   // React Router gives the first history entry the key "default", so there is no in-app page to go back to
   const goBack = () => (location.key === "default" ? navigate("/") : navigate(-1));
 
   const addToCart = useCartStore((state) => state.addItem);
-  const [quantity, setQuantity] = useState(1);
-
-  // Quantity of this product that is already in the cart
-  const existingQuantity = useCartStore((state) =>
-    product ? state.items[Number(product.id)]?.quantity || 0 : 0
-  );
-
-  const handleIncrease = () => setQuantity((prev) => prev + 1);
-  const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  const { quantity, increase, decrease } = useQuantity();
+  const existingQuantity = useCartItemQuantity(product?.id);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -35,20 +29,15 @@ function ProductPage() {
     });
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center text-gray-400">
-        <div className="animate-pulse text-lg font-medium">Loading product details...</div>
-      </div>
-    );
-  }
+  if (isLoading) return <ProductSkeleton />;
 
   if (error || !product) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center space-y-4 text-center">
-        <p className="text-red-500 font-medium">
-          Failed to load data, or the product doesn't exist.
-        </p>
+      <QueryError
+        error={error}
+        fallbackMessage="Failed to load the product"
+        onRetry={() => refetch()}
+      >
         <button
           type="button"
           onClick={goBack}
@@ -56,7 +45,7 @@ function ProductPage() {
         >
           Go back
         </button>
-      </div>
+      </QueryError>
     );
   }
 
@@ -111,14 +100,12 @@ function ProductPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">Quantity:</span>
 
-              <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-1">
-                <MinusButton onClick={handleDecrease} size="md" />
-                <span aria-live="polite" className="w-10 text-center font-bold text-gray-800">
-                  <span className="sr-only">Quantity: </span>
-                  {quantity}
-                </span>
-                <PlusButton onClick={handleIncrease} size="md" />
-              </div>
+              <QuantitySelector
+                value={quantity}
+                onIncrease={increase}
+                onDecrease={decrease}
+                size="md"
+              />
             </div>
 
             <button

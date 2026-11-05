@@ -81,7 +81,7 @@ function ModalWrapper() {
           type="button"
           onClick={closeModal}
           aria-label="Close dialog"
-          className="absolute top-4 right-4 z-20 p-2 text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500"
+          className="absolute top-4 right-4 z-20 p-2 text-gray-600 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500"
         >
           <X className="w-5 h-5" />
         </button>

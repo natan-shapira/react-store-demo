@@ -2,8 +2,7 @@ import { Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { CartItem } from "../../types";
 import { formatPrice } from "../../utils/formatters";
-import PlusButton from "../PlusButton/PlusButton";
-import MinusButton from "../MinusButton/MinusButton";
+import QuantitySelector from "../QuantitySelector/QuantitySelector";
 
 interface CartItemRowProps {
   item: CartItem;
@@ -53,14 +52,12 @@ function CartItemRow({
         <p className="text-sm text-gray-700 mt-1">{formatPrice(item.price)} each</p>
       </div>
 
-      <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-1">
-        <MinusButton onClick={() => onDecrease(item.id)} size="md" />
-        <span aria-live="polite" className="w-10 text-center font-medium">
-          <span className="sr-only">Quantity: </span>
-          {item.quantity}
-        </span>
-        <PlusButton onClick={() => onIncrease(item.id)} size="md" />
-      </div>
+      <QuantitySelector
+        value={item.quantity}
+        onIncrease={() => onIncrease(item.id)}
+        onDecrease={() => onDecrease(item.id)}
+        size="md"
+      />
 
       <p className="w-24 text-end font-semibold text-gray-900">
         {formatPrice(item.price * item.quantity)}
@@ -69,7 +66,7 @@ function CartItemRow({
       <button
         type="button"
         onClick={() => onRemove(item.id)}
-        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+        className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
         aria-label="Remove from cart"
       >
         <Trash2 className="w-5 h-5" />

@@ -2,6 +2,8 @@ import { useState } from "react";
 import { PRODUCTS_PER_PAGE, useProductsList } from "../../api/products";
 import Pagination from "../Pagination/Pagination";
 import ProductCard from "../ProductCard/ProductCard";
+import { ProductGridSkeleton } from "../PageSkeletons/PageSkeletons";
+import QueryError from "../QueryError/QueryError";
 
 interface ProductsListProps {
   category: string | null;
@@ -16,10 +18,18 @@ function ProductsList({ category }: ProductsListProps) {
     setPage(0);
   }
 
-  const { data, isLoading, isPlaceholderData, error } = useProductsList(category, page);
+  const { data, isLoading, isPlaceholderData, error, refetch } = useProductsList(category, page);
 
-  if (isLoading) return <div className="text-center py-12 text-gray-500">Loading products...</div>;
-  if (error) return <div className="text-center py-12 text-red-500">Failed to load data</div>;
+  if (isLoading) return <ProductGridSkeleton />;
+  if (error) {
+    return (
+      <QueryError
+        error={error}
+        fallbackMessage="Failed to load products"
+        onRetry={() => refetch()}
+      />
+    );
+  }
 
   const products = data?.products;
   const totalPages = data ? Math.ceil(data.total / PRODUCTS_PER_PAGE) : 0;

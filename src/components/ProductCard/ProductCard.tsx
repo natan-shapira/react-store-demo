@@ -1,35 +1,22 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { Product } from "../../types";
 import { Eye, ShoppingBag, CheckCircle2 } from "lucide-react";
 import { useModalStore } from "../../stores/useModalStore";
-import { useCartStore } from "../../stores/useCartStore";
+import { useCartItemQuantity, useCartStore } from "../../stores/useCartStore";
 import ProductModalContent from "../../modals/ProductModalContent/ProductModalContent";
 import { formatPrice } from "../../utils/formatters";
-import PlusButton from "../PlusButton/PlusButton";
-import MinusButton from "../MinusButton/MinusButton";
+import { useQuantity } from "../../hooks/useQuantity";
+import QuantitySelector from "../QuantitySelector/QuantitySelector";
 
 interface ProductCardProps {
   product: Product;
 }
 
 function ProductCard({ product }: ProductCardProps) {
-  const [quantity, setQuantity] = useState(1);
+  const { quantity, increase, decrease, reset } = useQuantity();
   const addToCart = useCartStore((state) => state.addItem);
   const openModal = useModalStore((state) => state.openModal);
-
-  // Quantity of this product that is already in the cart
-  const existingQuantity = useCartStore((state) => state.items[Number(product.id)]?.quantity || 0);
-
-  const handleIncrease = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setQuantity((prev) => prev + 1);
-  };
-
-  const handleDecrease = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-  };
+  const existingQuantity = useCartItemQuantity(product.id);
 
   return (
     <div
@@ -88,10 +75,7 @@ function ProductCard({ product }: ProductCardProps) {
           {/* Quick view opens the product in a modal */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              openModal(<ProductModalContent product={product} />, product.title);
-            }}
+            onClick={() => openModal(<ProductModalContent product={product} />, product.title)}
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500"
             title="Quick view"
           >
@@ -103,17 +87,7 @@ function ProductCard({ product }: ProductCardProps) {
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5">
             <span className="text-xs text-gray-500 font-medium">Quantity:</span>
-            <div className="flex items-center gap-2">
-              <MinusButton onClick={handleDecrease} />
-
-              {/* The sr-only label lets screen readers announce the quantity */}
-              <span aria-live="polite" className="w-6 text-center font-bold text-sm text-gray-800">
-                <span className="sr-only">Quantity: </span>
-                {quantity}
-              </span>
-
-              <PlusButton onClick={handleIncrease} />
-            </div>
+            <QuantitySelector value={quantity} onIncrease={increase} onDecrease={decrease} />
           </div>
 
           {/* Adds the selected quantity to the cart */}
@@ -124,7 +98,7 @@ function ProductCard({ product }: ProductCardProps) {
                 ...product,
                 quantity,
               });
-              setQuantity(1);
+              reset();
             }}
             className={`w-full py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-sm transition-all active:scale-98 cursor-pointer focus-visible:outline-2 focus-visible:outline-blue-500 ${
               existingQuantity > 0

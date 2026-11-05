@@ -1,10 +1,9 @@
 import { ShoppingBag, CheckCircle } from "lucide-react";
-import PlusButton from "../../components/PlusButton/PlusButton";
-import MinusButton from "../../components/MinusButton/MinusButton";
-import { useCartStore } from "../../stores/useCartStore";
+import QuantitySelector from "../../components/QuantitySelector/QuantitySelector";
+import { useCartItemQuantity, useCartStore } from "../../stores/useCartStore";
 import { useModalStore } from "../../stores/useModalStore";
 import type { Product } from "../../types";
-import { useState } from "react";
+import { useQuantity } from "../../hooks/useQuantity";
 import { formatPrice } from "../../utils/formatters";
 
 interface ProductModalContentProps {
@@ -12,15 +11,10 @@ interface ProductModalContentProps {
 }
 
 function ProductModalContent({ product }: ProductModalContentProps) {
-  const [quantity, setQuantity] = useState(1);
+  const { quantity, increase, decrease } = useQuantity();
   const addItem = useCartStore((state) => state.addItem);
   const closeModal = useModalStore((state) => state.closeModal);
-
-  // Quantity of this product that is already in the cart
-  const existingQuantity = useCartStore((state) => state.items[product.id]?.quantity || 0);
-
-  const handleIncrease = () => setQuantity((prev) => prev + 1);
-  const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  const existingQuantity = useCartItemQuantity(product.id);
 
   return (
     <div className="space-y-6">
@@ -51,27 +45,19 @@ function ProductModalContent({ product }: ProductModalContentProps) {
       {/* Price and quantity */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <span className="text-xs text-gray-400 block">Unit price</span>
+          <span className="text-xs text-gray-500 block">Unit price</span>
           <span className="text-3xl font-extrabold text-gray-900">
             {formatPrice(product.price)}
           </span>
         </div>
 
-        {/* Quantity selector */}
-        <div className="flex items-center border border-gray-200 rounded-xl bg-gray-50 p-1">
-          <MinusButton onClick={handleDecrease} size="md" />
-          <span aria-live="polite" className="w-10 text-center font-bold text-gray-800">
-            <span className="sr-only">Quantity: </span>
-            {quantity}
-          </span>
-          <PlusButton onClick={handleIncrease} size="md" />
-        </div>
+        <QuantitySelector value={quantity} onIncrease={increase} onDecrease={decrease} size="md" />
       </div>
 
       {/* Footer: total and add to cart */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div>
-          <span className="text-xs text-gray-400 block">Total</span>
+          <span className="text-xs text-gray-500 block">Total</span>
           <span className="text-xl font-bold text-blue-600">
             {formatPrice(product.price * quantity)}
           </span>

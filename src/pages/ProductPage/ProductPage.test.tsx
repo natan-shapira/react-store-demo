@@ -7,6 +7,7 @@ import { useProduct } from "../../api/products";
 import { useCartStore } from "../../stores/useCartStore";
 import type { Product } from "../../types";
 import { getAddToCartButton, getQuantity } from "../../test/queries";
+import { ApiError } from "../../api/ApiError";
 
 vi.mock("../../api/products", () => ({ useProduct: vi.fn() }));
 
@@ -24,6 +25,7 @@ const mockQuery = (overrides: Record<string, unknown> = {}) =>
     data: product,
     isLoading: false,
     error: null,
+    refetch: vi.fn(),
     ...overrides,
   } as unknown as ReturnType<typeof useProduct>);
 
@@ -49,20 +51,35 @@ describe("ProductPage", () => {
   });
 
   describe("Loading and errors", () => {
-    it("should show a loading message while loading", () => {
+    it("should show the product skeleton while loading", () => {
       mockQuery({ isLoading: true, data: undefined });
       renderPage();
 
-      expect(screen.getByText("Loading product details...")).toBeInTheDocument();
+      expect(screen.getByRole("status", { name: "Loading product" })).toBeInTheDocument();
     });
 
-    it("should show an error message when the product cannot be loaded", () => {
-      mockQuery({ data: undefined, error: new Error("Product with id '5' not found") });
+    it("should show the error message from the server", () => {
+      mockQuery({ data: undefined, error: new ApiError("Product with id '5' not found", 404) });
       renderPage();
 
-      expect(
-        screen.getByText("Failed to load data, or the product doesn't exist.")
-      ).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent("Product with id '5' not found");
+    });
+
+    it("should not offer to try again when the product does not exist", () => {
+      mockQuery({ data: undefined, error: new ApiError("Product with id '5' not found", 404) });
+      renderPage();
+
+      expect(screen.queryByRole("button", { name: "Try again" })).not.toBeInTheDocument();
+    });
+
+    it("should request the product again when Try again is clicked after a server error", async () => {
+      const refetch = vi.fn();
+      mockQuery({ data: undefined, error: new ApiError("Internal server error", 500), refetch });
+      const { user } = renderPage();
+
+      await user.click(screen.getByRole("button", { name: "Try again" }));
+
+      expect(refetch).toHaveBeenCalledOnce();
     });
 
     it('should return to the previous page when "Go back" is clicked on the error screen', async () => {

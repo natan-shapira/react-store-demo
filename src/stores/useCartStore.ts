@@ -79,3 +79,7 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
+
+// Selects a number, so a component re-renders only when this product's quantity changes
+export const useCartItemQuantity = (productId: number | undefined) =>
+  useCartStore((state) => (productId === undefined ? 0 : (state.items[productId]?.quantity ?? 0)));

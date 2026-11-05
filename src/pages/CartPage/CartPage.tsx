@@ -51,21 +51,14 @@ function CartPage() {
     setUnselectedIds(allSelected ? new Set(items.map((item) => item.id)) : new Set());
   };
 
-  const handleIncrease = (id: number) => {
-    //updateQuantity(id, cartItems[id].quantity + 1);
-    updateQuantity(id, cartItems[id]?.quantity ? cartItems[id].quantity + 1 : 1);
+  // The store removes the item once its quantity drops below 1
+  const changeQuantity = (id: number, delta: number) => {
+    const item = cartItems[id];
+    if (item) updateQuantity(id, item.quantity + delta);
   };
-  const handleDecrease = (id: number) => {
-    //updateQuantity(id, cartItems[id].quantity - 1);
-    updateQuantity(id, cartItems[id]?.quantity ? Math.max(0, cartItems[id].quantity - 1) : 0);
-  };
+  const handleIncrease = (id: number) => changeQuantity(id, 1);
+  const handleDecrease = (id: number) => changeQuantity(id, -1);
 
-  const handleRemove = (id: number) => {
-    removeItem(id);
-  };
-  const handleClearCart = () => {
-    clearCart();
-  };
   const handleCheckout = () => {
     navigate("/checkout", { state: { selectedItemIds: selectedItems.map((item) => item.id) } });
   };
@@ -97,7 +90,7 @@ function CartPage() {
         </h1>
         <button
           type="button"
-          onClick={handleClearCart}
+          onClick={clearCart}
           className="text-sm text-gray-500 hover:text-red-600 transition-colors"
         >
           Clear cart
@@ -130,7 +123,7 @@ function CartPage() {
                 onToggleSelect={handleToggleSelect}
                 onIncrease={handleIncrease}
                 onDecrease={handleDecrease}
-                onRemove={handleRemove}
+                onRemove={removeItem}
               />
             ))}
           </ul>

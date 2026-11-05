@@ -55,19 +55,34 @@ function ProductCardSkeleton() {
   );
 }
 
+function ProductGrid() {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      {Array.from({ length: PRODUCT_CARD_COUNT }, (_, i) => (
+        <ProductCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
 export function HomeSkeleton() {
   return (
     <SkeletonContainer label="Loading products">
-      <div className="flex gap-2 py-2 overflow-hidden">
+      <div className="flex gap-2 py-2 mb-4 overflow-hidden">
         {Array.from({ length: CATEGORY_COUNT }, (_, i) => (
           <Bone key={i} className="h-9 w-24 shrink-0 rounded-xl" />
         ))}
       </div>
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {Array.from({ length: PRODUCT_CARD_COUNT }, (_, i) => (
-          <ProductCardSkeleton key={i} />
-        ))}
-      </div>
+      <ProductGrid />
+    </SkeletonContainer>
+  );
+}
+
+// The products area alone, for when the page around it (e.g. the categories bar) is already shown
+export function ProductGridSkeleton() {
+  return (
+    <SkeletonContainer label="Loading products">
+      <ProductGrid />
     </SkeletonContainer>
   );
 }

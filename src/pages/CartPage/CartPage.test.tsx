@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { render, screen, within } from "@testing-library/react";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import CartPage from "./CartPage";
 import { useCartStore } from "../../stores/useCartStore";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -37,6 +37,10 @@ const cartItems: Record<number, CartItem> = {
   },
 };
 
+const CheckoutStateDisplay = () => (
+  <pre data-testid="checkout-state">{JSON.stringify(useLocation().state)}</pre>
+);
+
 const renderCartPage = () => {
   const user = userEvent.setup();
   render(
@@ -44,11 +48,22 @@ const renderCartPage = () => {
       <Routes>
         <Route path="/cart" element={<CartPage />} />
         <Route path="/" element={<div data-testid="home-page">Home Page</div>} />
+        <Route path="/checkout" element={<CheckoutStateDisplay />} />
       </Routes>
     </MemoryRouter>
   );
   return { user };
 };
+
+const getRowCheckbox = (title: string) =>
+  screen.queryByRole("checkbox", { name: `Select ${title}` });
+
+const getRow = (title: string) => getRowCheckbox(title)!.closest("li")!;
+
+const getCheckoutButton = () => screen.getByRole("button", { name: "Proceed to checkout" });
+
+const getSelectAll = () =>
+  screen.getByRole("checkbox", { name: /select all/i }) as HTMLInputElement;
 
 const getSummaryPrice = (label: RegExp) =>
   Number(screen.getByText(label).nextElementSibling?.textContent?.replace("$", ""));
@@ -64,7 +79,7 @@ describe("CartPage", () => {
     useCartStore.setState({ items: structuredClone(cartItems) });
   });
 
-  it("shows the empty cart state when there are no items", () => {
+  it("should show the empty cart state when there are no items", () => {
     useCartStore.setState({ items: {} });
 
     renderCartPage();
@@ -166,6 +181,124 @@ describe("CartPage", () => {
     it("should not change the cart contents", async () => {
       await toggleItem();
       expect(useCartStore.getState().items).toEqual(cartItems);
+    });
+  });
+
+  it("should select an item again when its checkbox is clicked a second time", async () => {
+    const { user } = renderCartPage();
+    const checkbox = getRowCheckbox("Coffee Mug")!;
+
+    await user.click(checkbox);
+    await user.click(checkbox);
+
+    expect(checkbox).toBeChecked();
+    expect(screen.getByText("(3 of 3 selected)")).toBeInTheDocument();
+  });
+
+  describe("Select all", () => {
+    it("should deselect every item when all are selected", async () => {
+      const { user } = renderCartPage();
+
+      await user.click(getSelectAll());
+
+      expect(screen.getByText("(0 of 3 selected)")).toBeInTheDocument();
+      expect(getSelectAll().checked).toBe(false);
+      expect(getCheckoutButton()).toBeDisabled();
+    });
+
+    it("should select every item when only some are selected", async () => {
+      const { user } = renderCartPage();
+      await user.click(screen.getByRole("checkbox", { name: /select coffee mug/i }));
+
+      await user.click(getSelectAll());
+
+      expect(screen.getByText("(3 of 3 selected)")).toBeInTheDocument();
+      expect(getSelectAll().checked).toBe(true);
+    });
+  });
+
+  describe("Quantity", () => {
+    it("should increase the quantity of an item", async () => {
+      const { user } = renderCartPage();
+
+      await user.click(
+        within(getRow("Coffee Mug")).getByRole("button", { name: "Increase quantity" })
+      );
+
+      expect(useCartStore.getState().items[2]?.quantity).toBe(2);
+      expect(within(getRow("Coffee Mug")).getByText(formatPrice(25))).toBeInTheDocument();
+    });
+
+    it("should decrease the quantity of an item", async () => {
+      const { user } = renderCartPage();
+
+      await user.click(
+        within(getRow("Wireless Headphones")).getByRole("button", { name: "Decrease quantity" })
+      );
+
+      expect(useCartStore.getState().items[1]?.quantity).toBe(1);
+    });
+
+    it("should remove an item when its quantity is decreased below 1", async () => {
+      const { user } = renderCartPage();
+
+      await user.click(
+        within(getRow("Coffee Mug")).getByRole("button", { name: "Decrease quantity" })
+      );
+
+      expect(getRowCheckbox("Coffee Mug")).not.toBeInTheDocument();
+      expect(useCartStore.getState().items[2]).toBeUndefined();
+    });
+
+    it("should update the total when a quantity changes", async () => {
+      const { user } = renderCartPage();
+
+      await user.click(
+        within(getRow("Wireless Headphones")).getByRole("button", { name: "Increase quantity" })
+      );
+
+      expect(screen.getByText("Total").nextElementSibling).toHaveTextContent(formatPrice(327.5));
+    });
+  });
+
+  describe("Removing items", () => {
+    it("should remove an item when its remove button is clicked", async () => {
+      const { user } = renderCartPage();
+
+      await user.click(
+        within(getRow("Notebook")).getByRole("button", { name: "Remove from cart" })
+      );
+
+      expect(getRowCheckbox("Notebook")).not.toBeInTheDocument();
+      expect(Object.keys(useCartStore.getState().items)).toEqual(["1", "2"]);
+    });
+
+    it("should show the empty cart state when the cart is cleared", async () => {
+      const { user } = renderCartPage();
+
+      await user.click(screen.getByRole("button", { name: "Clear cart" }));
+
+      expect(screen.getByText("Your cart is empty")).toBeInTheDocument();
+      expect(useCartStore.getState().items).toEqual({});
+    });
+  });
+
+  describe("Checkout", () => {
+    it("should go to checkout with the ids of the selected items only", async () => {
+      const { user } = renderCartPage();
+      await user.click(screen.getByRole("checkbox", { name: /select coffee mug/i }));
+
+      await user.click(getCheckoutButton());
+
+      expect(JSON.parse(screen.getByTestId("checkout-state").textContent!)).toEqual({
+        selectedItemIds: [1, 3],
+      });
+    });
+
+    it("should enable checkout while at least one item is selected", () => {
+      renderCartPage();
+
+      expect(getCheckoutButton()).toBeEnabled();
     });
   });
 });

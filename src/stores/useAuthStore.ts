@@ -28,47 +28,33 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isLoading: false,
       error: null,
-      login: async ({ username, password }) => {
+      login: async (credentials) => {
         set({ isLoading: true, error: null });
         try {
-          const data = await loginUser({ username, password });
-          set({
-            token: data.token,
-            user: {
-              id: data.id,
-              username: data.username,
-              email: data.email,
-              firstName: data.firstName,
-              lastName: data.lastName,
-            },
-            isLoading: false,
-          });
+          const { token, ...user } = await loginUser(credentials);
+          set({ token, user, isLoading: false });
           return true;
         } catch (error) {
           set({ error: getErrorMessage(error, "Login failed"), isLoading: false });
           return false;
         }
       },
+      // No request is made, so this cannot fail yet; add error handling once a real endpoint exists
       signup: async (data) => {
         set({ isLoading: true, error: null });
-        try {
-          await new Promise((resolve) => setTimeout(resolve, SIGNUP_DELAY_MS));
-          set({
-            token: null,
-            user: {
-              id: Date.now(),
-              username: data.username,
-              email: data.email,
-              firstName: data.firstName,
-              lastName: data.lastName,
-            },
-            isLoading: false,
-          });
-          return true;
-        } catch (error) {
-          set({ error: getErrorMessage(error, "Signup failed"), isLoading: false });
-          return false;
-        }
+        await new Promise((resolve) => setTimeout(resolve, SIGNUP_DELAY_MS));
+        set({
+          token: null,
+          user: {
+            id: Date.now(),
+            username: data.username,
+            email: data.email,
+            firstName: data.firstName,
+            lastName: data.lastName,
+          },
+          isLoading: false,
+        });
+        return true;
       },
       updateUser: (id, image) => {
         set((state) => (state.user?.id === id ? { user: { ...state.user, image } } : state));

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { useCartStore } from "./useCartStore";
+import { act, renderHook } from "@testing-library/react";
+import { useCartItemQuantity, useCartStore } from "./useCartStore";
 import { createCartItem } from "../test/factories";
 
 const getItems = () => useCartStore.getState().items;
@@ -109,6 +110,38 @@ describe("useCartStore", () => {
 
       const persisted = JSON.parse(localStorage.getItem("cart-storage")!);
       expect(persisted.state.items).toEqual({ 1: createCartItem(1, 2) });
+    });
+  });
+
+  describe("useCartItemQuantity", () => {
+    it("should return the quantity of a product in the cart", () => {
+      useCartStore.setState({ items: { 1: createCartItem(1, 4) } });
+
+      const { result } = renderHook(() => useCartItemQuantity(1));
+
+      expect(result.current).toBe(4);
+    });
+
+    it("should return 0 for a product that is not in the cart", () => {
+      const { result } = renderHook(() => useCartItemQuantity(99));
+
+      expect(result.current).toBe(0);
+    });
+
+    it("should return 0 while the product id is unknown", () => {
+      useCartStore.setState({ items: { 1: createCartItem(1, 4) } });
+
+      const { result } = renderHook(() => useCartItemQuantity(undefined));
+
+      expect(result.current).toBe(0);
+    });
+
+    it("should update when the product is added to the cart", () => {
+      const { result } = renderHook(() => useCartItemQuantity(1));
+
+      act(() => useCartStore.getState().addItem(createCartItem(1, 2)));
+
+      expect(result.current).toBe(2);
     });
   });
 });

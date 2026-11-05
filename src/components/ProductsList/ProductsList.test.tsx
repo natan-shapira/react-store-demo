@@ -19,6 +19,7 @@ const mockQuery = (overrides: Record<string, unknown> = {}) =>
     isLoading: false,
     isPlaceholderData: false,
     error: null,
+    refetch: vi.fn(),
     ...overrides,
   } as unknown as ReturnType<typeof useProductsList>);
 
@@ -44,18 +45,28 @@ describe("ProductsList", () => {
   });
 
   describe("Loading and errors", () => {
-    it("should show a loading message while loading", () => {
+    it("should show the products skeleton while loading", () => {
       mockQuery({ isLoading: true, data: undefined });
       renderList();
 
-      expect(screen.getByText("Loading products...")).toBeInTheDocument();
+      expect(screen.getByRole("status", { name: "Loading products" })).toBeInTheDocument();
     });
 
-    it("should show an error message when the request fails", () => {
+    it("should show the error message when the request fails", () => {
       mockQuery({ error: new Error("Network error"), data: undefined });
       renderList();
 
-      expect(screen.getByText("Failed to load data")).toBeInTheDocument();
+      expect(screen.getByRole("alert")).toHaveTextContent("Network error");
+    });
+
+    it("should request the products again when Try again is clicked", async () => {
+      const refetch = vi.fn();
+      mockQuery({ error: new Error("Network error"), data: undefined, refetch });
+      const { user } = renderList();
+
+      await user.click(screen.getByRole("button", { name: "Try again" }));
+
+      expect(refetch).toHaveBeenCalledOnce();
     });
   });
 
