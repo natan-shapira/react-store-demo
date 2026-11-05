@@ -16,6 +16,8 @@ export default defineConfig({
       reporter: ["text", "html"],
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/main.tsx", "src/**/*.d.ts"],
+      // test:coverage fails below these, so CI catches untested code
+      thresholds: { statements: 95, branches: 90, functions: 90, lines: 95 },
     },
   },
 });
