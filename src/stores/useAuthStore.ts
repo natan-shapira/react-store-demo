@@ -91,7 +91,10 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
+      version: 1,
       partialize: (state) => ({ token: state.token, user: state.user }),
+      // Data saved before versioning (version 0) already has the current shape, so it is kept as is
+      migrate: (persistedState) => persistedState as Pick<AuthState, "token" | "user">,
     }
   )
 );

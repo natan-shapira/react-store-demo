@@ -36,6 +36,10 @@ describe("NotFoundPage", () => {
       renderNotFoundPage({ hasHistory: false });
       expect(document.title).toBe("Page not found | ReactShop");
     });
+    it("should move focus to the heading", () => {
+      renderNotFoundPage({ hasHistory: false });
+      expect(screen.getByRole("heading", { name: /page not found/i })).toHaveFocus();
+    });
   });
 
   describe("Back to home", () => {

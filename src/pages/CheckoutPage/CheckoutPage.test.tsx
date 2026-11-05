@@ -85,6 +85,13 @@ describe("CheckoutPage", () => {
     });
   });
 
+  it('should set the title to "Checkout" and focus the heading', () => {
+    renderCheckout({ selectedItemIds: [1] });
+
+    expect(document.title).toBe("Checkout | ReactShop");
+    expect(screen.getByRole("heading", { level: 1, name: "Checkout" })).toHaveFocus();
+  });
+
   describe("Not yet available", () => {
     it("should explain that checkout is not available yet", () => {
       renderCheckout({ selectedItemIds: [1] });

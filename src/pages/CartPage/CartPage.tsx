@@ -5,8 +5,11 @@ import CartItemRow from "../../components/CartItemRow/CartItemRow";
 import { useCartStore } from "../../stores/useCartStore";
 import { formatPrice } from "../../utils/formatters";
 import { useShallow } from "zustand/shallow";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 function CartPage() {
+  const headingRef = usePageMeta("Cart");
+
   const navigate = useNavigate();
   const {
     items: cartItems,
@@ -67,7 +70,9 @@ function CartPage() {
     return (
       <div className="flex flex-col items-center justify-center text-center py-20">
         <ShoppingBag className="w-16 h-16 text-gray-300 mb-4" />
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
+        <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold text-gray-900 mb-2">
+          Your cart is empty
+        </h1>
         <p className="text-gray-500 mb-6">You haven't added any products to your cart yet</p>
         <Link
           to="/"
@@ -82,7 +87,7 @@ function CartPage() {
   return (
     <div className="py-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold text-gray-900">
           Shopping Cart{" "}
           <span className="text-gray-500 font-normal">
             ({totalItems} {totalItems === 1 ? "item" : "items"})

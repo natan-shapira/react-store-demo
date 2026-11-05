@@ -7,11 +7,13 @@ import { useQuantity } from "../../hooks/useQuantity";
 import QuantitySelector from "../../components/QuantitySelector/QuantitySelector";
 import { ProductSkeleton } from "../../components/PageSkeletons/PageSkeletons";
 import QueryError from "../../components/QueryError/QueryError";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 function ProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: product, isLoading, error, refetch } = useProduct(id!);
+  const headingRef = usePageMeta(product?.title ?? "Product");
 
   const location = useLocation();
   // React Router gives the first history entry the key "default", so there is no in-app page to go back to
@@ -70,7 +72,11 @@ function ProductPage() {
 
         <div className="flex flex-col justify-between space-y-6">
           <div className="space-y-4">
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">
+            <h1
+              ref={headingRef}
+              tabIndex={-1}
+              className="text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight"
+            >
               {product.title}
             </h1>
 

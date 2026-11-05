@@ -1,19 +1,21 @@
 import { ArrowLeft, House, SearchX } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 function NotFoundPage() {
   const navigate = useNavigate();
   const location = useLocation();
   // React Router gives the first history entry the key "default", so there is nowhere to go back to
   const canGoBack = location.key !== "default";
+  const headingRef = usePageMeta("Page not found");
 
   return (
     <div className="flex flex-col items-center justify-center text-center py-20">
-      <title>Page not found | ReactShop</title>
-
       <SearchX className="w-16 h-16 text-gray-300 mb-4" />
       <p className="text-sm font-semibold text-blue-600 mb-2">404</p>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Page not found</h1>
+      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold text-gray-900 mb-2">
+        Page not found
+      </h1>
       <p className="text-gray-500 mb-6 max-w-md break-all">
         We couldn't find <code className="font-mono text-gray-700">{location.pathname}</code>. It
         may have been moved, or the address may be incorrect.

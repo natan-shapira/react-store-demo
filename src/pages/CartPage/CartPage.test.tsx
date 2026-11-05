@@ -90,6 +90,13 @@ describe("CartPage", () => {
     expect(screen.queryByText(/order summary/i)).not.toBeInTheDocument();
   });
 
+  it('should set the title to "Cart" and focus the heading', () => {
+    renderCartPage();
+
+    expect(document.title).toBe("Cart | ReactShop");
+    expect(screen.getByRole("heading", { level: 1, name: /shopping cart/i })).toHaveFocus();
+  });
+
   it("should display cart items when items exist in store", () => {
     renderCartPage();
 

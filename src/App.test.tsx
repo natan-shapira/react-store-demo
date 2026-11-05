@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
@@ -122,6 +122,8 @@ describe("App", () => {
       const dialog = await screen.findByRole("dialog", { name: "No items selected" });
       expect(dialog).toHaveAccessibleDescription(/Select at least one item in your cart/);
       expect(window.location.pathname).toBe("/cart");
+      // The cart page focuses its heading on mount, which must not pull focus out of the open dialog
+      await waitFor(() => expect(dialog).toContainElement(document.activeElement as HTMLElement));
     });
 
     it.each(["/auth", "/", "/cart"])("should render the navbar on %s", (path) => {

@@ -75,6 +75,10 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: "cart-storage",
+      version: 1,
+      partialize: (state) => ({ items: state.items }),
+      // Data saved before versioning (version 0) already has the current shape, so it is kept as is
+      migrate: (persistedState) => persistedState as Pick<CartState, "items">,
     }
   )
 );

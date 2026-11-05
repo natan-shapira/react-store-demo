@@ -5,6 +5,7 @@ import { useShallow } from "zustand/shallow";
 import { useCartStore } from "../../stores/useCartStore";
 import type { CartItem } from "../../types";
 import { formatPrice } from "../../utils/formatters";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import NoItemsModalContent, {
   NO_ITEMS_MODAL_DESCRIPTION_ID,
   NO_ITEMS_MODAL_TITLE,
@@ -23,6 +24,7 @@ const getSelectedItemIds = (state: unknown): number[] => {
 };
 
 function CheckoutPage() {
+  const headingRef = usePageMeta("Checkout");
   const location = useLocation();
   const selectedItemIds = getSelectedItemIds(location.state);
 
@@ -55,7 +57,9 @@ function CheckoutPage() {
 
   return (
     <div className="py-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
+      <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-bold text-gray-900 mb-6">
+        Checkout
+      </h1>
 
       {/* Temporary: remove together with the disabled "Place order" button once ordering is implemented */}
       <div

@@ -10,11 +10,13 @@ import {
 } from "../../validators/authValidators";
 import FormField from "./FormField";
 import { useShallow } from "zustand/shallow";
+import { usePageMeta } from "../../hooks/usePageMeta";
 
 function AuthPage() {
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [formErrors, setFormErrors] = useState<AuthFormErrors>({});
+  const headingRef = usePageMeta(isSignUp ? "Sign up" : "Sign in");
 
   const { login, signup, isLoading, error, clearError } = useAuthStore(
     useShallow((state) => ({
@@ -95,7 +97,7 @@ function AuthPage() {
           <div className="inline-flex p-3 bg-blue-50 text-blue-600 rounded-2xl mb-2">
             {isSignUp ? <UserPlus className="w-8 h-8" /> : <LogIn className="w-8 h-8" />}
           </div>
-          <h1 className="text-2xl font-extrabold text-gray-900">
+          <h1 ref={headingRef} tabIndex={-1} className="text-2xl font-extrabold text-gray-900">
             {isSignUp ? "Create an Account" : "Welcome Back"}
           </h1>
           <p className="text-sm text-gray-500">

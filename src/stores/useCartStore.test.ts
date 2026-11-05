@@ -111,6 +111,26 @@ describe("useCartStore", () => {
       const persisted = JSON.parse(localStorage.getItem("cart-storage")!);
       expect(persisted.state.items).toEqual({ 1: createCartItem(1, 2) });
     });
+
+    it("should save only the items, with the current version", () => {
+      useCartStore.getState().addItem(createCartItem(1, 2));
+
+      const persisted = JSON.parse(localStorage.getItem("cart-storage")!);
+      expect(Object.keys(persisted.state)).toEqual(["items"]);
+      expect(persisted.version).toBe(1);
+    });
+
+    it("should restore a cart saved before versioning", async () => {
+      const savedItems = { 3: createCartItem(3, 4) };
+      localStorage.setItem(
+        "cart-storage",
+        JSON.stringify({ state: { items: savedItems }, version: 0 })
+      );
+
+      await useCartStore.persist.rehydrate();
+
+      expect(getItems()).toEqual(savedItems);
+    });
   });
 
   describe("useCartItemQuantity", () => {

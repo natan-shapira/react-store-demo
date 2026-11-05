@@ -102,6 +102,20 @@ describe("ProductPage", () => {
   });
 
   describe("Display", () => {
+    it("should use the product title as the page title and focus the heading", () => {
+      renderPage();
+
+      expect(document.title).toBe("Wireless Headphones | ReactShop");
+      expect(screen.getByRole("heading", { level: 1, name: "Wireless Headphones" })).toHaveFocus();
+    });
+
+    it('should use "Product" as the page title while loading', () => {
+      mockQuery({ isLoading: true, data: undefined });
+      renderPage();
+
+      expect(document.title).toBe("Product | ReactShop");
+    });
+
     it("should request the product by the id in the URL", () => {
       renderPage();
 

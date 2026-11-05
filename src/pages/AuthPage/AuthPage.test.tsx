@@ -126,6 +126,25 @@ describe("AuthPage", () => {
     });
   });
 
+  describe("Page title and focus", () => {
+    it('should set the title to "Sign in" and focus the heading', () => {
+      renderAuthPage();
+
+      expect(document.title).toBe("Sign in | ReactShop");
+      expect(screen.getByRole("heading", { name: "Welcome Back" })).toHaveFocus();
+    });
+
+    it('should change the title to "Sign up" and focus the new heading after switching', async () => {
+      const user = userEvent.setup();
+      renderAuthPage();
+
+      await switchToSignup(user);
+
+      expect(document.title).toBe("Sign up | ReactShop");
+      expect(screen.getByRole("heading", { name: "Create an Account" })).toHaveFocus();
+    });
+  });
+
   describe("Switching modes", () => {
     it("should show the signup fields after switching to sign up", async () => {
       const user = renderAuthPage();

@@ -445,5 +445,23 @@ describe("useAuthStore", () => {
       expect(persisted).not.toHaveProperty("isLoading");
       expect(persisted).not.toHaveProperty("error");
     });
+
+    it("should save the current version", () => {
+      loggedIn();
+
+      expect(JSON.parse(localStorage.getItem("auth-storage")!).version).toBe(1);
+    });
+
+    it("should restore a session saved before versioning", async () => {
+      localStorage.setItem(
+        "auth-storage",
+        JSON.stringify({ state: { token: "old-token", user: storedUser }, version: 0 })
+      );
+
+      await useAuthStore.persist.rehydrate();
+
+      const { token, user } = useAuthStore.getState();
+      expect({ token, user }).toEqual({ token: "old-token", user: storedUser });
+    });
   });
 });

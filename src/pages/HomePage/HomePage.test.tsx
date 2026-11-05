@@ -70,6 +70,13 @@ describe("HomePage", () => {
     });
   });
 
+  it('should set the title to "Products" and focus the hidden page heading', () => {
+    renderHomePage();
+
+    expect(document.title).toBe("Products | ReactShop");
+    expect(screen.getByRole("heading", { level: 1, name: "Products" })).toHaveFocus();
+  });
+
   it("should render the categories bar and the products list", () => {
     renderHomePage();
 
