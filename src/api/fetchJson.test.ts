@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { fetchJson } from "./fetchJson";
 import { fetchWithAuth } from "./fetchWithAuth";
-import { ApiError } from "./ApiError";
+import { ApiError, NETWORK_ERROR_STATUS } from "./ApiError";
 
 vi.mock("./fetchWithAuth", () => ({ fetchWithAuth: vi.fn() }));
 
@@ -111,6 +111,37 @@ describe("fetchJson", () => {
 
       expect(error.message).toBe("Product not found");
       expect(error.cause).toBeUndefined();
+    });
+  });
+
+  describe("Network failures", () => {
+    const networkError = new TypeError("Failed to fetch");
+
+    it("should turn a failed request into an ApiError with a readable message", async () => {
+      vi.mocked(fetchWithAuth).mockRejectedValue(networkError);
+
+      const error = await getError(fetchJson(URL, anySchema, "Failed to load product"));
+
+      expect(error).toBeInstanceOf(ApiError);
+      expect(error.message).toBe(
+        "Could not reach the server. Check your connection and try again."
+      );
+      expect(error.status).toBe(NETWORK_ERROR_STATUS);
+    });
+
+    it("should keep the original error as the cause", async () => {
+      vi.mocked(fetchWithAuth).mockRejectedValue(networkError);
+
+      const error = await getError(fetchJson(URL, anySchema, "Failed to load product"));
+
+      expect(error.cause).toBe(networkError);
+    });
+
+    it("should rethrow a cancelled request unchanged", async () => {
+      const abortError = new DOMException("The operation was aborted.", "AbortError");
+      vi.mocked(fetchWithAuth).mockRejectedValue(abortError);
+
+      await expect(fetchJson(URL, anySchema, "Failed to load product")).rejects.toBe(abortError);
     });
   });
 

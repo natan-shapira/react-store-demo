@@ -120,6 +120,17 @@ describe("products API", () => {
       expect(result.current.error?.message).toBe("Internal server error");
     });
 
+    it("should report a readable error when the server cannot be reached", async () => {
+      vi.mocked(fetchWithAuth).mockRejectedValue(new TypeError("Failed to fetch"));
+
+      const { result } = renderHook(() => useProductsList(null, 0), { wrapper: createWrapper() });
+
+      await waitFor(() => expect(result.current.isError).toBe(true));
+      expect(result.current.error?.message).toBe(
+        "Could not reach the server. Check your connection and try again."
+      );
+    });
+
     it("should report an error when a product in the response is malformed", async () => {
       const productWithoutThumbnail = { ...createDummyProduct(2), thumbnail: undefined };
       respondWith({ products: [createDummyProduct(1), productWithoutThumbnail], total: 2 });

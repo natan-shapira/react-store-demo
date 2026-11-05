@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import QueryError from "./QueryError";
-import { ApiError } from "../../api/ApiError";
+import { ApiError, NETWORK_ERROR_STATUS } from "../../api/ApiError";
 
 const renderError = (error: unknown, onRetry = vi.fn()) => {
   const user = userEvent.setup();
@@ -33,6 +33,12 @@ describe("QueryError", () => {
     await user.click(screen.getByRole("button", { name: "Try again" }));
 
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("should offer to try again after a network error", () => {
+    renderError(new ApiError("Could not reach the server", NETWORK_ERROR_STATUS));
+
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
   });
 
   it("should not offer to try again for an error that will fail again", () => {

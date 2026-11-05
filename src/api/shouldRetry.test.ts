@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { isRetryableError, shouldRetry } from "./shouldRetry";
-import { ApiError } from "./ApiError";
+import { ApiError, NETWORK_ERROR_STATUS } from "./ApiError";
+
+const networkError = new ApiError("Could not reach the server", NETWORK_ERROR_STATUS);
 
 describe("isRetryableError", () => {
   it.each([
-    ["a network error", new TypeError("Failed to fetch"), true],
+    ["a network error", networkError, true],
     ["a 5xx error", new ApiError("Server error", 503), true],
+    ["an error that is not an ApiError", new TypeError("Failed to fetch"), true],
     ["a 4xx error", new ApiError("Not found", 404), false],
     ["an invalid response body", new ApiError("Failed to load products", 200), false],
   ])("should return %s → %s", (_, error, expected) => {
@@ -31,10 +34,8 @@ describe("shouldRetry", () => {
   });
 
   it("should retry a network error up to two times", () => {
-    const error = new TypeError("Failed to fetch");
-
-    expect(shouldRetry(0, error)).toBe(true);
-    expect(shouldRetry(1, error)).toBe(true);
-    expect(shouldRetry(2, error)).toBe(false);
+    expect(shouldRetry(0, networkError)).toBe(true);
+    expect(shouldRetry(1, networkError)).toBe(true);
+    expect(shouldRetry(2, networkError)).toBe(false);
   });
 });
