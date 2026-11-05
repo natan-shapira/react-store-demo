@@ -24,7 +24,6 @@ function ProductCard({ product }: ProductCardProps) {
         existingQuantity > 0 ? "border-emerald-300 ring-1 ring-emerald-200/50" : "border-gray-200"
       }`}
     >
-      {/* Image area with a zoom effect on hover */}
       <div className="relative h-52 w-full bg-gray-50 overflow-hidden">
         {/* The title link already leads to the product, so this duplicate is hidden from keyboard and screen readers */}
         <Link
@@ -45,7 +44,6 @@ function ProductCard({ product }: ProductCardProps) {
           {product.category}
         </span>
 
-        {/* In-cart badge, shown only when the product is already in the cart */}
         {existingQuantity > 0 && (
           <div className="pointer-events-none absolute top-3 left-3 bg-emerald-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md flex items-center gap-1.5 animate-fade-in">
             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -54,10 +52,8 @@ function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
 
-      {/* Card content */}
       <div className="p-4 flex flex-col flex-grow justify-between">
         <div>
-          {/* Product title, links to the product page */}
           <h3 className="font-semibold text-gray-800 line-clamp-1">
             <Link
               to={`/products/${product.id}`}
@@ -72,7 +68,6 @@ function ProductCard({ product }: ProductCardProps) {
         <div className="mt-4 flex items-center justify-between">
           <span className="text-xl font-bold text-gray-900">{formatPrice(product.price)}</span>
 
-          {/* Quick view opens the product in a modal */}
           <button
             type="button"
             onClick={() => openModal(<ProductModalContent product={product} />, product.title)}
@@ -83,14 +78,12 @@ function ProductCard({ product }: ProductCardProps) {
           </button>
         </div>
 
-        {/* Quantity selector and add to cart */}
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5">
             <span className="text-xs text-gray-500 font-medium">Quantity:</span>
             <QuantitySelector value={quantity} onIncrease={increase} onDecrease={decrease} />
           </div>
 
-          {/* Adds the selected quantity to the cart */}
           <button
             type="button"
             onClick={() => {

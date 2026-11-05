@@ -173,22 +173,46 @@ export function CartSkeleton() {
 
 export function CheckoutSkeleton() {
   return (
-    <SkeletonContainer label="Loading checkout" className="container mx-auto px-4 py-8">
-      <Bone className="h-9 w-40 mb-6 rounded-lg" />
-      <Bone className="h-5 w-2/3 mb-6 rounded-md" />
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <Bone className="h-8 w-48 mb-4 rounded-lg" />
-        <div className="divide-y divide-gray-200">
-          {Array.from({ length: CART_ROW_COUNT }, (_, i) => (
-            <div key={i} className="py-3 flex items-center justify-between">
-              <Bone className="h-5 w-1/2 rounded-md" />
-              <Bone className="h-5 w-16 rounded-md" />
-            </div>
-          ))}
+    <SkeletonContainer label="Loading checkout" className="py-4">
+      <Bone className="h-8 w-36 mb-6 rounded-lg" />
+      <Bone className="h-16 w-full mb-6 rounded-xl" />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 px-6">
+          <div className="py-4 border-b border-gray-200">
+            <Bone className="h-6 w-32 rounded-md" />
+          </div>
+          <div className="divide-y divide-gray-200">
+            {Array.from({ length: CART_ROW_COUNT }, (_, i) => (
+              <div key={i} className="flex items-center gap-4 py-4">
+                <Bone className="h-16 w-16 shrink-0 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Bone className="h-5 w-2/3 rounded-md" />
+                  <Bone className="h-4 w-1/4 rounded-md" />
+                </div>
+                <Bone className="h-6 w-20 shrink-0 rounded-md" />
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex justify-between border-t border-gray-200 pt-4 mt-2">
-          <Bone className="h-6 w-16 rounded-md" />
-          <Bone className="h-6 w-24 rounded-md" />
+        <div className="bg-white rounded-xl border border-gray-200 p-6 h-fit">
+          <Bone className="h-6 w-36 mb-4 rounded-md" />
+          <div className="space-y-3">
+            <div className="flex justify-between">
+              <Bone className="h-4 w-32 rounded-md" />
+              <Bone className="h-4 w-16 rounded-md" />
+            </div>
+            <div className="flex justify-between">
+              <Bone className="h-4 w-20 rounded-md" />
+              <Bone className="h-4 w-12 rounded-md" />
+            </div>
+            <div className="flex justify-between border-t border-gray-200 pt-3">
+              <Bone className="h-5 w-16 rounded-md" />
+              <Bone className="h-5 w-20 rounded-md" />
+            </div>
+          </div>
+          <Bone className="h-12 w-full mt-6 rounded-lg" />
+          <Bone className="h-3 w-40 mx-auto mt-2 rounded-md" />
+          <Bone className="h-4 w-24 mx-auto mt-3 rounded-md" />
         </div>
       </div>
     </SkeletonContainer>

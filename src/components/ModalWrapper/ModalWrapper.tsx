@@ -4,10 +4,11 @@ import { useEffect, useId, useRef } from "react";
 import { useShallow } from "zustand/shallow";
 
 function ModalWrapper() {
-  const { content, title, closeModal } = useModalStore(
+  const { content, title, descriptionId, closeModal } = useModalStore(
     useShallow((state) => ({
       content: state.content,
       title: state.title,
+      descriptionId: state.descriptionId,
       closeModal: state.closeModal,
     }))
   );
@@ -73,6 +74,7 @@ function ModalWrapper() {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={descriptionId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] outline-none"

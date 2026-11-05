@@ -17,10 +17,9 @@ export const useCartStore = create<CartState>()(
     (set, get) => ({
       items: {},
 
-      // Adds a product, or increases its quantity if it is already in the cart
       addItem: (product) => {
         const currentItems = get().items;
-        const productId = Number(product.id);
+        const productId = product.id;
         const existingItem = currentItems[productId];
 
         if (existingItem) {
@@ -75,7 +74,7 @@ export const useCartStore = create<CartState>()(
       clearCart: () => set({ items: {} }),
     }),
     {
-      name: "cart-storage", // localStorage key
+      name: "cart-storage",
     }
   )
 );

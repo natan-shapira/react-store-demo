@@ -114,6 +114,16 @@ describe("App", () => {
       expect(await screen.findByRole("heading", { name: "Checkout" })).toBeInTheDocument();
     });
 
+    it("should send /checkout without a selection to the cart and explain why", async () => {
+      logIn();
+      useCartStore.setState({ items: { 5: cartItem } });
+      renderAt("/checkout");
+
+      const dialog = await screen.findByRole("dialog", { name: "No items selected" });
+      expect(dialog).toHaveAccessibleDescription(/Select at least one item in your cart/);
+      expect(window.location.pathname).toBe("/cart");
+    });
+
     it.each(["/auth", "/", "/cart"])("should render the navbar on %s", (path) => {
       logIn();
       renderAt(path);

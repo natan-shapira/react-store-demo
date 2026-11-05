@@ -60,7 +60,6 @@ function ProductPage() {
         Back to catalog
       </button>
 
-      {/* Image on one side, details and actions on the other */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         <div className="relative h-96 lg:h-[500px] w-full bg-gray-50 rounded-3xl overflow-hidden border border-gray-100 flex items-center justify-center shadow-xs">
           <img src={product.image} alt={product.title} className="w-full h-full object-cover" />
@@ -82,7 +81,6 @@ function ProductPage() {
             </p>
           </div>
 
-          {/* Shown only when the product is already in the cart */}
           {existingQuantity > 0 && (
             <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 px-4 py-3 rounded-2xl text-sm flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-2.5 font-medium">
@@ -95,7 +93,6 @@ function ProductPage() {
             </div>
           )}
 
-          {/* Quantity selector and add to cart */}
           <div className="space-y-4 pt-6 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-700">Quantity:</span>

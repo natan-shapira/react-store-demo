@@ -51,7 +51,6 @@ export const useCategories = () => {
   });
 };
 
-// Loads one page of products, optionally filtered by category
 export const useProductsList = (category: string | null, skip: number = 0) => {
   return useQuery({
     queryKey: ["products", category, skip],

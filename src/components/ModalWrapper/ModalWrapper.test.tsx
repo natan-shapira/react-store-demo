@@ -51,7 +51,7 @@ const getLastAction = () => screen.getByRole("button", { name: "Last action" });
 
 describe("ModalWrapper", () => {
   beforeEach(() => {
-    useModalStore.setState({ content: null, title: "" });
+    useModalStore.getState().closeModal();
   });
 
   it("should render nothing when there is no content", () => {
@@ -82,6 +82,26 @@ describe("ModalWrapper", () => {
       "aria-modal",
       "true"
     );
+  });
+
+  it("should use the element with the description id as the accessible description", () => {
+    renderModal();
+    act(() =>
+      useModalStore
+        .getState()
+        .openModal(<p id="modal-desc">Explains the dialog</p>, "Modal title", {
+          descriptionId: "modal-desc",
+        })
+    );
+
+    expect(screen.getByRole("dialog")).toHaveAccessibleDescription("Explains the dialog");
+  });
+
+  it("should not set aria-describedby when no description id is given", () => {
+    renderModal();
+    openModal();
+
+    expect(screen.getByRole("dialog")).not.toHaveAttribute("aria-describedby");
   });
 
   it("should close when the backdrop is clicked", async () => {

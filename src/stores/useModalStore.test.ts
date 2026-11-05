@@ -41,6 +41,41 @@ describe("useModalStore", () => {
     expect(useModalStore.getState().title).toBe("");
   });
 
+  describe("descriptionId", () => {
+    it("should be undefined when no options are given", () => {
+      useModalStore.getState().openModal(firstContent, "First title");
+
+      expect(useModalStore.getState().descriptionId).toBeUndefined();
+    });
+
+    it("should store the description id from the options", () => {
+      useModalStore
+        .getState()
+        .openModal(firstContent, "First title", { descriptionId: "first-desc" });
+
+      expect(useModalStore.getState().descriptionId).toBe("first-desc");
+    });
+
+    it("should not keep the previous description id when another modal opens without one", () => {
+      useModalStore
+        .getState()
+        .openModal(firstContent, "First title", { descriptionId: "first-desc" });
+      useModalStore.getState().openModal(secondContent, "Second title");
+
+      expect(useModalStore.getState().descriptionId).toBeUndefined();
+    });
+
+    it("should clear the description id when closeModal is called", () => {
+      useModalStore
+        .getState()
+        .openModal(firstContent, "First title", { descriptionId: "first-desc" });
+
+      useModalStore.getState().closeModal();
+
+      expect(useModalStore.getState().descriptionId).toBeUndefined();
+    });
+  });
+
   it("should keep the content null when closeModal is called on a closed modal", () => {
     useModalStore.getState().closeModal();
 

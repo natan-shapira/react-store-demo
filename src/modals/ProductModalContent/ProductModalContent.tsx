@@ -18,7 +18,6 @@ function ProductModalContent({ product }: ProductModalContentProps) {
 
   return (
     <div className="space-y-6">
-      {/* Product image */}
       <div className="relative h-64 w-full bg-gray-50 rounded-2xl overflow-hidden flex items-center justify-center border border-gray-100">
         <img src={product.image} alt={product.title} className="h-full w-full object-cover" />
         <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-xs text-xs font-semibold px-3 py-1 rounded-full text-gray-700 shadow-xs">
@@ -29,7 +28,6 @@ function ProductModalContent({ product }: ProductModalContentProps) {
       {/* Description (the title is rendered by ModalWrapper) */}
       <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">{product.description}</p>
 
-      {/* Shown only when the product is already in the cart */}
       {existingQuantity > 0 && (
         <div className="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-3 rounded-xl text-sm flex items-center justify-between">
           <div className="flex items-center gap-2 font-medium">
@@ -42,7 +40,6 @@ function ProductModalContent({ product }: ProductModalContentProps) {
         </div>
       )}
 
-      {/* Price and quantity */}
       <div className="flex items-center justify-between pt-2">
         <div>
           <span className="text-xs text-gray-500 block">Unit price</span>
@@ -54,7 +51,6 @@ function ProductModalContent({ product }: ProductModalContentProps) {
         <QuantitySelector value={quantity} onIncrease={increase} onDecrease={decrease} size="md" />
       </div>
 
-      {/* Footer: total and add to cart */}
       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
         <div>
           <span className="text-xs text-gray-500 block">Total</span>

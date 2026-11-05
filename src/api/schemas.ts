@@ -17,7 +17,7 @@ export const dummyProductsResponseSchema = z.object({
   total: z.number(),
 });
 
-export const categorySchema = z.object({
+const categorySchema = z.object({
   slug: z.string(),
   name: z.string(),
   url: z.string(),
