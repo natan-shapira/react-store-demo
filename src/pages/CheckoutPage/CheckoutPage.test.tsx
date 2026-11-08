@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { getValueAfterLabel } from "../../test/queries";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import { describe, it, expect, beforeEach } from "vitest";
 import CheckoutPage from "./CheckoutPage";
@@ -79,9 +80,7 @@ describe("CheckoutPage", () => {
       renderCheckout({ selectedItemIds: [1, 2] });
 
       expect(screen.getByText("Subtotal (3 items)")).toBeInTheDocument();
-      expect(screen.getByText("Total").nextElementSibling).toHaveTextContent(
-        formatPrice(99.99 * 2 + 12.5)
-      );
+      expect(getValueAfterLabel("Total")).toHaveTextContent(formatPrice(99.99 * 2 + 12.5));
     });
   });
 

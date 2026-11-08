@@ -5,6 +5,8 @@ import { createCartItem } from "../test/factories";
 
 const getItems = () => useCartStore.getState().items;
 
+type PersistedCart = { state: Record<string, unknown>; version: number };
+
 describe("useCartStore", () => {
   beforeEach(() => {
     useCartStore.setState({ items: {} });
@@ -108,14 +110,14 @@ describe("useCartStore", () => {
     it('should save the items to localStorage under "cart-storage"', () => {
       useCartStore.getState().addItem(createCartItem(1, 2));
 
-      const persisted = JSON.parse(localStorage.getItem("cart-storage")!);
+      const persisted = JSON.parse(localStorage.getItem("cart-storage")!) as PersistedCart;
       expect(persisted.state.items).toEqual({ 1: createCartItem(1, 2) });
     });
 
     it("should save only the items, with the current version", () => {
       useCartStore.getState().addItem(createCartItem(1, 2));
 
-      const persisted = JSON.parse(localStorage.getItem("cart-storage")!);
+      const persisted = JSON.parse(localStorage.getItem("cart-storage")!) as PersistedCart;
       expect(Object.keys(persisted.state)).toEqual(["items"]);
       expect(persisted.version).toBe(1);
     });

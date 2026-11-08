@@ -32,7 +32,7 @@ const renderAuthPage = () => {
       </Routes>
     </MemoryRouter>
   );
-  return userEvent.setup({ delay: null });
+  return { user: userEvent.setup({ delay: null }) };
 };
 
 const switchToSignup = (user: UserEvent) =>
@@ -72,7 +72,7 @@ describe("AuthPage", () => {
     });
 
     it("should show a general error and not call login when fields are empty", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await user.click(screen.getByRole("button", { name: "Sign in" }));
 
@@ -81,7 +81,7 @@ describe("AuthPage", () => {
     });
 
     it("should clear the general error when the user starts typing", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await user.click(screen.getByRole("button", { name: "Sign in" }));
       await user.type(screen.getByLabelText("Username"), "e");
@@ -90,7 +90,7 @@ describe("AuthPage", () => {
     });
 
     it("should call login with a trimmed username and the password as typed", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await user.type(screen.getByLabelText("Username"), "  emilys  ");
       await user.type(screen.getByLabelText("Password"), " emilyspass ");
@@ -100,7 +100,7 @@ describe("AuthPage", () => {
     });
 
     it("should navigate to the home page after a successful login", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await user.type(screen.getByLabelText("Username"), "emilys");
       await user.type(screen.getByLabelText("Password"), "emilyspass");
@@ -111,11 +111,11 @@ describe("AuthPage", () => {
     });
 
     it("should stay on the page and show the store error when login fails", async () => {
-      login.mockImplementation(async () => {
+      login.mockImplementation(() => {
         useAuthStore.setState({ error: "Invalid credentials" });
-        return false;
+        return Promise.resolve(false);
       });
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await user.type(screen.getByLabelText("Username"), "emilys");
       await user.type(screen.getByLabelText("Password"), "wrong");
@@ -135,8 +135,7 @@ describe("AuthPage", () => {
     });
 
     it('should change the title to "Sign up" and focus the new heading after switching', async () => {
-      const user = userEvent.setup();
-      renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
 
@@ -147,7 +146,7 @@ describe("AuthPage", () => {
 
   describe("Switching modes", () => {
     it("should show the signup fields after switching to sign up", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
 
@@ -158,7 +157,7 @@ describe("AuthPage", () => {
     });
 
     it("should hide the signup fields after switching back to sign in", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
       await user.click(screen.getByRole("button", { name: "Sign in" }));
@@ -169,7 +168,7 @@ describe("AuthPage", () => {
     });
 
     it("should clear the form errors when switching", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await user.click(screen.getByRole("button", { name: "Sign in" }));
       await switchToSignup(user);
@@ -179,7 +178,7 @@ describe("AuthPage", () => {
 
     it("should clear the store error when switching", async () => {
       useAuthStore.setState({ error: "Invalid credentials" });
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       expect(screen.getByRole("alert")).toHaveTextContent("Invalid credentials");
       await switchToSignup(user);
@@ -189,7 +188,7 @@ describe("AuthPage", () => {
     });
 
     it("should reset the typed values when switching", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await user.type(screen.getByLabelText("Username"), "emilys");
       await switchToSignup(user);
@@ -200,7 +199,7 @@ describe("AuthPage", () => {
 
   describe("Sign up", () => {
     it("should show field errors and not call signup when the form is empty", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
       await user.click(screen.getByRole("button", { name: "Sign up" }));
@@ -213,7 +212,7 @@ describe("AuthPage", () => {
     });
 
     it("should show a mismatch error when the passwords differ", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
       await fillSignupForm(user, { confirmPassword: "Different123" });
@@ -226,7 +225,7 @@ describe("AuthPage", () => {
     });
 
     it("should clear only the error of the field being edited", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
       await user.click(screen.getByRole("button", { name: "Sign up" }));
@@ -237,7 +236,7 @@ describe("AuthPage", () => {
     });
 
     it("should clear the mismatch error when the password is edited", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
       await fillSignupForm(user, { confirmPassword: "Different123" });
@@ -248,7 +247,7 @@ describe("AuthPage", () => {
     });
 
     it("should call signup with trimmed data and without confirmPassword", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
       await fillSignupForm(user, {
@@ -268,7 +267,7 @@ describe("AuthPage", () => {
     });
 
     it("should navigate to the home page after a successful signup", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
       await fillSignupForm(user);
@@ -290,10 +289,12 @@ describe("AuthPage", () => {
     });
 
     it("should disable the sign up form while loading", async () => {
-      const user = renderAuthPage();
+      const { user } = renderAuthPage();
 
       await switchToSignup(user);
-      act(() => useAuthStore.setState({ isLoading: true }));
+      act(() => {
+        useAuthStore.setState({ isLoading: true });
+      });
 
       for (const label of Object.values(signupLabels)) {
         expect(screen.getByLabelText(label)).toBeDisabled();

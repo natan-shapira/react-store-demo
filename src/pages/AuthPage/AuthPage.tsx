@@ -53,9 +53,14 @@ function AuthPage() {
     clearError();
 
     const formData = new FormData(e.currentTarget);
-    const getText = (name: string) => String(formData.get(name) ?? "").trim();
+    // A FormData value can also be a File, which String() would turn into "[object File]"
+    const getValue = (name: string) => {
+      const value = formData.get(name);
+      return typeof value === "string" ? value : "";
+    };
+    const getText = (name: string) => getValue(name).trim();
     // Passwords may legitimately contain leading or trailing spaces
-    const password = String(formData.get("password") ?? "");
+    const password = getValue("password");
     const username = getText("username");
 
     if (isSignUp) {
@@ -66,14 +71,14 @@ function AuthPage() {
         firstName: getText("firstName"),
         lastName: getText("lastName"),
       };
-      const confirmPassword = String(formData.get("confirmPassword") ?? "");
+      const confirmPassword = getValue("confirmPassword");
 
       const errors = validateSignup({ ...signupData, confirmPassword });
       setFormErrors(errors);
       if (Object.keys(errors).length > 0) return;
 
       if (await signup(signupData)) {
-        navigate("/");
+        void navigate("/");
       }
     } else {
       const signinData: SigninData = { username, password };
@@ -83,7 +88,7 @@ function AuthPage() {
       if (Object.keys(errors).length > 0) return;
 
       if (await login(signinData)) {
-        navigate("/");
+        void navigate("/");
       }
     }
   };

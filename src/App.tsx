@@ -49,7 +49,8 @@ function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
 
   useEffect(() => {
-    checkAuth();
+    // checkAuth handles its own errors, so nothing is left to catch here
+    void checkAuth();
   }, [checkAuth]);
 
   return (

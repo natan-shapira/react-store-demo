@@ -9,9 +9,12 @@ const openModal = () =>
 
 const renderModal = () => {
   const user = userEvent.setup();
-  const { container } = render(<ModalWrapper />);
-  return { user, getBackdrop: () => container.firstElementChild as HTMLElement };
+  render(<ModalWrapper />);
+  return { user };
 };
+
+// The backdrop has role="presentation": it is a mouse shortcut, not a control
+const getBackdrop = () => screen.getByRole("presentation");
 
 const ModalBody = () => (
   <div>
@@ -55,9 +58,9 @@ describe("ModalWrapper", () => {
   });
 
   it("should render nothing when there is no content", () => {
-    const { getBackdrop } = renderModal();
+    renderModal();
 
-    expect(getBackdrop()).toBeNull();
+    expect(screen.queryByRole("presentation")).not.toBeInTheDocument();
   });
 
   it("should render the content from the modal store", () => {
@@ -105,7 +108,7 @@ describe("ModalWrapper", () => {
   });
 
   it("should close when the backdrop is clicked", async () => {
-    const { user, getBackdrop } = renderModal();
+    const { user } = renderModal();
     openModal();
 
     await user.click(getBackdrop());
@@ -228,7 +231,8 @@ describe("ModalWrapper", () => {
       for (let i = 0; i < 6; i++) {
         await user.tab();
         expect(trigger).not.toHaveFocus();
-        expect(screen.getByRole("dialog").contains(document.activeElement)).toBe(true);
+        // eslint-disable-next-line testing-library/no-node-access -- focus containment can only be read from document.activeElement
+        expect(screen.getByRole("dialog")).toContainElement(document.activeElement as HTMLElement);
       }
     });
   });

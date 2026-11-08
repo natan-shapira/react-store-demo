@@ -124,7 +124,7 @@ describe("useAuthStore", () => {
       expect(useAuthStore.getState().isLoading).toBe(false);
     });
 
-    it("should clear a previous error when a new login starts", async () => {
+    it("should clear a previous error when a new login starts", () => {
       useAuthStore.setState({ error: "Previous error" });
       vi.mocked(loginUser).mockReturnValue(new Promise(() => {}));
 
@@ -430,7 +430,12 @@ describe("useAuthStore", () => {
   });
 
   describe("persistence", () => {
-    const getPersistedState = () => JSON.parse(localStorage.getItem("auth-storage")!).state;
+    const readPersisted = () =>
+      JSON.parse(localStorage.getItem("auth-storage")!) as {
+        state: Record<string, unknown>;
+        version: number;
+      };
+    const getPersistedState = () => readPersisted().state;
 
     it("should save only the token and user to localStorage", () => {
       loggedIn();
@@ -449,7 +454,7 @@ describe("useAuthStore", () => {
     it("should save the current version", () => {
       loggedIn();
 
-      expect(JSON.parse(localStorage.getItem("auth-storage")!).version).toBe(1);
+      expect(readPersisted().version).toBe(1);
     });
 
     it("should restore a session saved before versioning", async () => {

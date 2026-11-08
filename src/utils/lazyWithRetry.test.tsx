@@ -35,7 +35,7 @@ describe("lazyWithRetry", () => {
 
   describe("When the chunk loads", () => {
     it("should render the component", async () => {
-      const Page = lazyWithRetry(async () => ({ default: TestPage }), "TestPage", reload);
+      const Page = lazyWithRetry(() => Promise.resolve({ default: TestPage }), "TestPage", reload);
 
       renderLazy(Page);
 
@@ -45,7 +45,7 @@ describe("lazyWithRetry", () => {
 
     it("should clear the reload flag left by an earlier failure", async () => {
       sessionStorage.setItem(RELOAD_KEY, "true");
-      const Page = lazyWithRetry(async () => ({ default: TestPage }), "TestPage", reload);
+      const Page = lazyWithRetry(() => Promise.resolve({ default: TestPage }), "TestPage", reload);
 
       renderLazy(Page);
       await screen.findByRole("heading", { name: "Test page" });

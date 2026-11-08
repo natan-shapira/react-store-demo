@@ -7,7 +7,14 @@ const createBitmap = (width: number, height: number) => ({ width, height, close:
 const createContext = () => ({
   fillStyle: "",
   fillRect: vi.fn(),
-  drawImage: vi.fn(),
+  drawImage: vi.fn<(image: unknown, x: number, y: number, width: number, height: number) => void>(),
+});
+
+const mockCanvas = (context: ReturnType<typeof createContext>) => ({
+  getContext: vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(context as never),
+  toDataURL: vi
+    .spyOn(HTMLCanvasElement.prototype, "toDataURL")
+    .mockReturnValue("data:image/jpeg;base64,compressed"),
 });
 
 const file = new File(["image"], "avatar.png", { type: "image/png" });
@@ -15,6 +22,7 @@ const file = new File(["image"], "avatar.png", { type: "image/png" });
 describe("compressImage", () => {
   let bitmap: ReturnType<typeof createBitmap>;
   let context: ReturnType<typeof createContext>;
+  let canvas: ReturnType<typeof mockCanvas>;
 
   const setImageSize = (width: number, height: number) => {
     bitmap = createBitmap(width, height);
@@ -22,17 +30,14 @@ describe("compressImage", () => {
   };
 
   const getDrawnSize = () => {
-    const [, , , width, height] = context.drawImage.mock.lastCall ?? [];
-    return { width, height };
+    const call = context.drawImage.mock.lastCall;
+    return { width: call?.[3], height: call?.[4] };
   };
 
   beforeEach(() => {
     setImageSize(3000, 2000);
     context = createContext();
-    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(context as never);
-    vi.spyOn(HTMLCanvasElement.prototype, "toDataURL").mockReturnValue(
-      "data:image/jpeg;base64,compressed"
-    );
+    canvas = mockCanvas(context);
   });
 
   afterEach(() => {
@@ -73,7 +78,7 @@ describe("compressImage", () => {
   it("should return a JPEG data URL with the default quality (0.8)", async () => {
     const result = await compressImage(file);
 
-    expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledWith("image/jpeg", 0.8);
+    expect(canvas.toDataURL).toHaveBeenCalledWith("image/jpeg", 0.8);
     expect(result).toBe("data:image/jpeg;base64,compressed");
   });
 
@@ -81,7 +86,7 @@ describe("compressImage", () => {
     await compressImage(file, { maxSize: 300, quality: 0.5 });
 
     expect(getDrawnSize()).toEqual({ width: 300, height: 200 });
-    expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledWith("image/jpeg", 0.5);
+    expect(canvas.toDataURL).toHaveBeenCalledWith("image/jpeg", 0.5);
   });
 
   it("should close the image bitmap after drawing", async () => {
@@ -111,7 +116,7 @@ describe("compressImage", () => {
   });
 
   it("should throw when the canvas context is not available", async () => {
-    vi.mocked(HTMLCanvasElement.prototype.getContext).mockReturnValue(null);
+    canvas.getContext.mockReturnValue(null);
 
     await expect(compressImage(file)).rejects.toThrow("Canvas is not supported");
     expect(bitmap.close).toHaveBeenCalledTimes(1);

@@ -63,7 +63,9 @@ function CartPage() {
   const handleDecrease = (id: number) => changeQuantity(id, -1);
 
   const handleCheckout = () => {
-    navigate("/checkout", { state: { selectedItemIds: selectedItems.map((item) => item.id) } });
+    void navigate("/checkout", {
+      state: { selectedItemIds: selectedItems.map((item) => item.id) },
+    });
   };
 
   if (items.length === 0) {

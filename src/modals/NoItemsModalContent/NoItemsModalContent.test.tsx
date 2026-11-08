@@ -69,7 +69,10 @@ describe("NoItemsModalContent", () => {
       vi.useRealTimers();
     });
 
-    const advance = (ms: number) => act(() => vi.advanceTimersByTime(ms));
+    const advance = (ms: number) =>
+      act(() => {
+        vi.advanceTimersByTime(ms);
+      });
     const openOtherModal = () =>
       act(() => useModalStore.getState().openModal(<p>Other content</p>, "Other modal"));
 

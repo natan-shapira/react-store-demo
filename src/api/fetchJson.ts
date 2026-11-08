@@ -7,6 +7,11 @@ const NETWORK_ERROR_MESSAGE = "Could not reach the server. Check your connection
 const isAbortError = (error: unknown) =>
   error instanceof DOMException && error.name === "AbortError";
 
+const getServerMessage = (data: unknown) =>
+  data && typeof data === "object" && "message" in data && typeof data.message === "string"
+    ? data.message
+    : undefined;
+
 export async function fetchJson<T>(
   url: string,
   schema: z.ZodType<T>,
@@ -24,10 +29,10 @@ export async function fetchJson<T>(
   }
 
   // Error pages (e.g. a 502 from a proxy) may not be JSON, so a parse failure must not hide the HTTP error
-  const data = await response.json().catch(() => null);
+  const data: unknown = await response.json().catch(() => null);
 
   if (!response.ok || data === null) {
-    throw new ApiError(data?.message || errorMessage, response.status);
+    throw new ApiError(getServerMessage(data) || errorMessage, response.status);
   }
 
   const result = schema.safeParse(data);

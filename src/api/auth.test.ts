@@ -24,7 +24,7 @@ const sensitiveFields = {
 };
 
 const respondWith = (body: unknown, status = 200) =>
-  vi.mocked(fetchWithAuth).mockImplementation(async () => jsonResponse(body, status));
+  vi.mocked(fetchWithAuth).mockImplementation(() => Promise.resolve(jsonResponse(body, status)));
 
 describe("auth API", () => {
   beforeEach(() => {

@@ -34,7 +34,7 @@ const toProduct = (item: ReturnType<typeof createDummyProduct>) => ({
 
 // A Response body can only be read once, so every call gets a new one
 const respondWith = (body: unknown, status = 200) =>
-  vi.mocked(fetchWithAuth).mockImplementation(async () => jsonResponse(body, status));
+  vi.mocked(fetchWithAuth).mockImplementation(() => Promise.resolve(jsonResponse(body, status)));
 
 const createWrapper = () => {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -96,7 +96,7 @@ describe("products API", () => {
 
     it("should keep the previous page data while the next page loads", async () => {
       vi.mocked(fetchWithAuth)
-        .mockImplementationOnce(async () => jsonResponse(firstPage))
+        .mockImplementationOnce(() => Promise.resolve(jsonResponse(firstPage)))
         .mockImplementationOnce(() => new Promise(() => {}));
 
       const { result, rerender } = renderHook(({ page }) => useProductsList(null, page), {

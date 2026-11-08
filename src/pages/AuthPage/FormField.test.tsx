@@ -49,6 +49,7 @@ describe("FormField", () => {
       renderField();
 
       expect(getInput()).not.toHaveAttribute("aria-describedby");
+      // eslint-disable-next-line testing-library/no-node-access -- the error paragraph has no role; its id is what aria-describedby points to
       expect(document.getElementById("email-error")).toBeNull();
     });
 

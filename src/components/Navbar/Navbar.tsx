@@ -123,6 +123,7 @@ function Navbar() {
               </button>
               <input
                 type="file"
+                aria-label="Profile picture file"
                 ref={fileInputRef}
                 onChange={handleImageChange}
                 accept="image/*"

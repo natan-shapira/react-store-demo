@@ -12,7 +12,9 @@ const productSchema = z.object({ id: z.number(), title: z.string() });
 const anySchema = z.unknown();
 
 const respondWith = (body: string, status = 200) =>
-  vi.mocked(fetchWithAuth).mockImplementation(async () => new Response(body, { status }));
+  vi
+    .mocked(fetchWithAuth)
+    .mockImplementation(() => Promise.resolve(new Response(body, { status })));
 
 const getError = async (promise: Promise<unknown>) => {
   try {

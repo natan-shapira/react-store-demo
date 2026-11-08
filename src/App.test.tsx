@@ -123,7 +123,7 @@ describe("App", () => {
       expect(dialog).toHaveAccessibleDescription(/Select at least one item in your cart/);
       expect(window.location.pathname).toBe("/cart");
       // The cart page focuses its heading on mount, which must not pull focus out of the open dialog
-      await waitFor(() => expect(dialog).toContainElement(document.activeElement as HTMLElement));
+      await waitFor(() => expect(dialog).toHaveFocus());
     });
 
     it.each(["/auth", "/", "/cart"])("should render the navbar on %s", (path) => {
@@ -233,7 +233,9 @@ describe("App", () => {
     it("should not call checkAuth again when the token changes after login", () => {
       renderAt("/auth");
 
-      act(() => logIn());
+      act(() => {
+        logIn();
+      });
 
       expect(checkAuth).toHaveBeenCalledTimes(1);
     });

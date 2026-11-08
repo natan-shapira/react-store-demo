@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import { getValueAfterLabel } from "../../test/queries";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import CartPage from "./CartPage";
 import { useCartStore } from "../../stores/useCartStore";
@@ -58,15 +59,17 @@ const renderCartPage = () => {
 const getRowCheckbox = (title: string) =>
   screen.queryByRole("checkbox", { name: `Select ${title}` });
 
-const getRow = (title: string) => getRowCheckbox(title)!.closest("li")!;
+const getRow = (title: string) =>
+  screen
+    .getAllByRole("listitem")
+    .find((row) => within(row).queryByRole("checkbox", { name: `Select ${title}` }))!;
 
 const getCheckoutButton = () => screen.getByRole("button", { name: "Proceed to checkout" });
 
-const getSelectAll = () =>
-  screen.getByRole("checkbox", { name: /select all/i }) as HTMLInputElement;
+const getSelectAll = () => screen.getByRole<HTMLInputElement>("checkbox", { name: /select all/i });
 
 const getSummaryPrice = (label: RegExp) =>
-  Number(screen.getByText(label).nextElementSibling?.textContent?.replace("$", ""));
+  Number(getValueAfterLabel(label).textContent.replace("$", ""));
 
 const getSelectedQuantity = () =>
   Number(screen.getByText(/^Subtotal/).textContent?.match(/\((\d+) items?\)/)?.[1]);
@@ -113,18 +116,18 @@ describe("CartPage", () => {
     renderCartPage();
 
     expect(screen.getByText(`(${totalItems} items)`)).toBeInTheDocument();
-    expect(screen.getByText(`Subtotal (${totalItems} items)`).nextElementSibling).toHaveTextContent(
+    expect(getValueAfterLabel(`Subtotal (${totalItems} items)`)).toHaveTextContent(
       formatPrice(subtotal)
     );
-    expect(screen.getByText("Shipping").nextElementSibling).toHaveTextContent("Free");
-    expect(screen.getByText("Total").nextElementSibling).toHaveTextContent(formatPrice(subtotal));
+    expect(getValueAfterLabel("Shipping")).toHaveTextContent("Free");
+    expect(getValueAfterLabel("Total")).toHaveTextContent(formatPrice(subtotal));
   });
 
   it("should toggle the checkbox state when clicked", async () => {
     const { user } = renderCartPage();
-    const checkbox = screen.getByRole("checkbox", {
+    const checkbox = screen.getByRole<HTMLInputElement>("checkbox", {
       name: /select wireless headphones/i,
-    }) as HTMLInputElement;
+    });
     const isChecked = checkbox.checked;
     await user.click(checkbox);
     expect(checkbox.checked).toBe(!isChecked);
@@ -139,9 +142,9 @@ describe("CartPage", () => {
     // Renders the page, captures the summary before the click and toggles the item
     const toggleItem = async () => {
       const { user } = renderCartPage();
-      const checkbox = screen.getByRole("checkbox", {
+      const checkbox = screen.getByRole<HTMLInputElement>("checkbox", {
         name: /select wireless headphones/i,
-      }) as HTMLInputElement;
+      });
       const before = {
         direction: checkbox.checked ? -1 : 1,
         subtotal: getSummaryPrice(/^Subtotal/),
@@ -178,7 +181,7 @@ describe("CartPage", () => {
 
     it("should update the select all checkbox state", async () => {
       const { direction, selectedRows } = await toggleItem();
-      const selectAll = screen.getByRole("checkbox", { name: /select all/i }) as HTMLInputElement;
+      const selectAll = screen.getByRole<HTMLInputElement>("checkbox", { name: /select all/i });
       const selectedAfter = selectedRows + direction;
 
       expect(selectAll.checked).toBe(selectedAfter === itemCount);
@@ -215,7 +218,9 @@ describe("CartPage", () => {
 
     it("should select every item when only some are selected", async () => {
       const { user } = renderCartPage();
-      await user.click(screen.getByRole("checkbox", { name: /select coffee mug/i }));
+      await user.click(
+        screen.getByRole<HTMLInputElement>("checkbox", { name: /select coffee mug/i })
+      );
 
       await user.click(getSelectAll());
 
@@ -264,7 +269,7 @@ describe("CartPage", () => {
         within(getRow("Wireless Headphones")).getByRole("button", { name: "Increase quantity" })
       );
 
-      expect(screen.getByText("Total").nextElementSibling).toHaveTextContent(formatPrice(327.5));
+      expect(getValueAfterLabel("Total")).toHaveTextContent(formatPrice(327.5));
     });
   });
 
@@ -293,11 +298,13 @@ describe("CartPage", () => {
   describe("Checkout", () => {
     it("should go to checkout with the ids of the selected items only", async () => {
       const { user } = renderCartPage();
-      await user.click(screen.getByRole("checkbox", { name: /select coffee mug/i }));
+      await user.click(
+        screen.getByRole<HTMLInputElement>("checkbox", { name: /select coffee mug/i })
+      );
 
       await user.click(getCheckoutButton());
 
-      expect(JSON.parse(screen.getByTestId("checkout-state").textContent!)).toEqual({
+      expect(JSON.parse(screen.getByTestId("checkout-state").textContent)).toEqual({
         selectedItemIds: [1, 3],
       });
     });

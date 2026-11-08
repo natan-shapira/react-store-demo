@@ -37,11 +37,15 @@ const renderList = (category: string | null = null) => {
 
 const getPagination = () => screen.getByRole("navigation", { name: "Pagination" });
 
+const mockScrollTo = () => vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+
 describe("ProductsList", () => {
+  let scrollTo: ReturnType<typeof mockScrollTo>;
+
   beforeEach(() => {
     vi.mocked(useProductsList).mockReset();
     mockQuery();
-    vi.spyOn(window, "scrollTo").mockImplementation(() => {});
+    scrollTo = mockScrollTo();
   });
 
   describe("Loading and errors", () => {
@@ -115,7 +119,7 @@ describe("ProductsList", () => {
 
       await user.click(within(getPagination()).getByRole("button", { name: "Next" }));
 
-      expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+      expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
     });
 
     it("should disable the pagination while the next page is loading", () => {

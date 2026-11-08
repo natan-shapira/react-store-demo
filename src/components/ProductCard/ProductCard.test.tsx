@@ -39,7 +39,9 @@ const renderCard = () => {
   return { user };
 };
 
+// The image link is hidden from assistive technology on purpose, so it can only be reached through the DOM
 const isHiddenFromScreenReaders = (element: HTMLElement) =>
+  // eslint-disable-next-line testing-library/no-node-access -- see above
   element.closest('[aria-hidden="true"]') !== null;
 
 describe("ProductCard", () => {
@@ -76,6 +78,7 @@ describe("ProductCard", () => {
     it("should keep the image link out of the tab order", () => {
       renderCard();
 
+      // eslint-disable-next-line testing-library/no-node-access -- the image link is hidden from assistive technology on purpose
       expect(screen.getByAltText("Wireless Headphones").closest("a")).toHaveAttribute(
         "tabindex",
         "-1"

@@ -45,6 +45,8 @@ describe("PageSkeletons", () => {
   it("should render a placeholder card for each product in the home grid", () => {
     const { container } = render(<HomeSkeleton />);
 
+    // Placeholder cards are decorative and have no role or text, so only their markup can be counted
+    // eslint-disable-next-line testing-library/no-container, testing-library/no-node-access
     expect(container.querySelectorAll(".grid > div")).toHaveLength(12);
   });
 });

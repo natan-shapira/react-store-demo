@@ -36,7 +36,7 @@ const renderNavbar = (path = "/") => {
   return { user };
 };
 
-const getFileInput = () => document.querySelector<HTMLInputElement>('input[type="file"]')!;
+const getFileInput = () => screen.getByLabelText<HTMLInputElement>("Profile picture file");
 const imageFile = () => new File(["image"], "avatar.png", { type: "image/png" });
 
 describe("Navbar", () => {
@@ -219,7 +219,9 @@ describe("Navbar", () => {
       await user.upload(getFileInput(), imageFile());
       expect(await screen.findByText(/could not load this image/i)).toBeInTheDocument();
 
-      act(() => vi.advanceTimersByTime(5000));
+      act(() => {
+        vi.advanceTimersByTime(5000);
+      });
 
       expect(screen.queryByText(/could not load this image/i)).not.toBeInTheDocument();
     });

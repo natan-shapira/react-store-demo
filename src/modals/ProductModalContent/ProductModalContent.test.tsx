@@ -5,7 +5,7 @@ import ProductModalContent from "./ProductModalContent";
 import { useCartStore } from "../../stores/useCartStore";
 import { useModalStore } from "../../stores/useModalStore";
 import type { Product } from "../../types";
-import { getAddToCartButton, getQuantity } from "../../test/queries";
+import { getAddToCartButton, getQuantity, getValueAfterLabel } from "../../test/queries";
 
 const product: Product = {
   id: 3,
@@ -22,7 +22,7 @@ const renderContent = () => {
   return { user };
 };
 
-const getTotal = () => screen.getByText("Total").nextElementSibling;
+const getTotal = () => getValueAfterLabel("Total");
 
 describe("ProductModalContent", () => {
   beforeEach(() => {
@@ -40,7 +40,7 @@ describe("ProductModalContent", () => {
       );
       expect(screen.getByText("Noise cancelling headphones")).toBeInTheDocument();
       expect(screen.getByText("electronics")).toBeInTheDocument();
-      expect(screen.getByText("Unit price").nextElementSibling).toHaveTextContent("$25.00");
+      expect(getValueAfterLabel("Unit price")).toHaveTextContent("$25.00");
     });
 
     it("should not render its own heading (the title comes from ModalWrapper)", () => {
