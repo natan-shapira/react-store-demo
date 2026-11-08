@@ -49,15 +49,17 @@ Then open the URL that Vite prints and sign in with the DummyJSON demo user:
 
 ## Scripts
 
-| Command                 | Description                               |
-| ----------------------- | ----------------------------------------- |
-| `npm run dev`           | Start the development server              |
-| `npm run build`         | Type-check and build for production       |
-| `npm run preview`       | Serve the production build locally        |
-| `npm run lint`          | Run ESLint                                |
-| `npm run format`        | Format the source files with Prettier     |
-| `npm test`              | Run the tests in watch mode               |
-| `npm run test:coverage` | Run the tests once with a coverage report |
+| Command                 | Description                                               |
+| ----------------------- | --------------------------------------------------------- |
+| `npm run dev`           | Start the development server                              |
+| `npm run build`         | Type-check and build for production                       |
+| `npm run preview`       | Serve the production build locally                        |
+| `npm run type-check`    | Type-check the app and config with TypeScript             |
+| `npm run lint`          | Run ESLint                                                |
+| `npm run format`        | Format the project with Prettier                          |
+| `npm run format:check`  | Check formatting without changing files                   |
+| `npm test`              | Run the tests in watch mode                               |
+| `npm run test:coverage` | Run the tests once and fail below the coverage thresholds |
 
 ## Project structure
 
@@ -87,6 +89,10 @@ Tests use Vitest with Testing Library in a jsdom environment. Shared setup lives
 - `queries.ts`: shared queries, such as reading the current quantity
 
 No test reaches the real API: the API modules are tested with `fetchWithAuth` mocked (and `fetchWithAuth` itself with `fetch` mocked), while components and pages mock the React Query hooks or the auth API.
+
+## Continuous integration
+
+GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull request to `main`: it installs with `npm ci`, then runs `type-check`, `lint`, `format:check`, `test:coverage` and `build`. A pull request should only be merged once all of them pass.
 
 ## Known limitations
 
