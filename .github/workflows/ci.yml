@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create .env from the example
+        run: cp .env.example .env
+
       - name: Type check
         run: npm run type-check
 

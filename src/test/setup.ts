@@ -2,8 +2,8 @@ import "@testing-library/jest-dom/vitest";
 import { configure } from "@testing-library/react";
 import { afterEach } from "vitest";
 
-// Pages are lazy loaded; under a busy parallel run (e.g. with coverage) the first load of a page chunk
-// can take longer than the 1s default, which made findBy* queries flaky
+// Pages are lazy loaded, and when many test files run in parallel (e.g. with coverage) the first load
+// of a page chunk can take longer than Testing Library's 1s default, so findBy* queries wait up to 3s
 configure({ asyncUtilTimeout: 3000 });
 
 // Testing Library unmounts rendered trees after each test on its own, because Vitest globals are enabled

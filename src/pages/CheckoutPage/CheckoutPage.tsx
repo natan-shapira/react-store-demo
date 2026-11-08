@@ -39,7 +39,8 @@ function CheckoutPage() {
   );
   const hasItems = cartItems.length > 0;
 
-  // Rendering must not update other components, so the modal is opened after the commit
+  // A component must not update other components while it renders, so the modal is opened
+  // in an effect, which runs after the render
   useEffect(() => {
     if (!hasItems) {
       openModal(<NoItemsModalContent />, NO_ITEMS_MODAL_TITLE, {
@@ -61,7 +62,7 @@ function CheckoutPage() {
         Checkout
       </h1>
 
-      {/* Temporary: remove together with the disabled "Place order" button once ordering is implemented */}
+      {/* Explains why the order cannot be placed yet, together with the disabled "Place order" button below */}
       <div
         role="note"
         className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"

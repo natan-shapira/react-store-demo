@@ -49,7 +49,7 @@ function App() {
   const checkAuth = useAuthStore((state) => state.checkAuth);
 
   useEffect(() => {
-    // checkAuth handles its own errors, so nothing is left to catch here
+    // void marks the promise as deliberately not awaited; checkAuth catches its own errors
     void checkAuth();
   }, [checkAuth]);
 

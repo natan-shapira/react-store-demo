@@ -18,7 +18,8 @@ interface AuthState {
   checkAuth: () => Promise<void>;
 }
 
-// DummyJSON has no real signup endpoint, so signup is simulated with a delay
+// DummyJSON has no real sign up endpoint (see "Known limitations" in the README),
+// so signup imitates a request with a short delay, which also shows the loading state
 const SIGNUP_DELAY_MS = 2000;
 
 export const useAuthStore = create<AuthState>()(
@@ -39,7 +40,8 @@ export const useAuthStore = create<AuthState>()(
           return false;
         }
       },
-      // No request is made, so this cannot fail yet; add error handling once a real endpoint exists
+      // Unlike login there is no try/catch: no request is sent, so nothing can fail.
+      // The user gets no token, because there is no real account to authenticate with
       signup: async (data) => {
         set({ isLoading: true, error: null });
         await new Promise((resolve) => setTimeout(resolve, SIGNUP_DELAY_MS));
@@ -83,7 +85,8 @@ export const useAuthStore = create<AuthState>()(
       },
       logout: () => {
         useCartStore.getState().clearCart();
-        // Also ends a pending checkAuth, which skips its own reset once the session has changed
+        // isLoading is reset here because a checkAuth may still be waiting for the server;
+        // when it finishes, it sees that the token changed and leaves this new state alone
         set({ token: null, user: null, error: null, isLoading: false });
       },
 
@@ -93,6 +96,7 @@ export const useAuthStore = create<AuthState>()(
       name: "auth-storage",
       version: 1,
       partialize: (state) => ({ token: state.token, user: state.user }),
+      // version and migrate let a future change to the saved shape convert old data when it loads.
       // Data saved before versioning (version 0) already has the current shape, so it is kept as is
       migrate: (persistedState) => persistedState as Pick<AuthState, "token" | "user">,
     }

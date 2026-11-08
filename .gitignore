@@ -13,11 +13,23 @@ coverage
 dist-ssr
 *.local
 
+# Environment files hold per-machine settings; .env.example documents the variables
+.env
+.env.*
+!.env.example
+
+# Images for trying out the profile picture upload while developing
+avatarImages/
+
+# Temporary bundles Vite writes next to its config while loading it
+vite.config.*.timestamp-*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj

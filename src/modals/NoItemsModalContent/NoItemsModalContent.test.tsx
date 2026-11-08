@@ -92,7 +92,8 @@ describe("NoItemsModalContent", () => {
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
-    // fireEvent instead of user-event: user-event waits on real timers, which never fire under fake timers
+    // user-event waits on timers between actions, and fake timers only move when the test advances them,
+    // so this test uses fireEvent, which dispatches the events immediately
     it("should stay open while the pointer is over it, and close after it leaves", () => {
       openNoItemsModal();
       const dialog = screen.getByRole("dialog");

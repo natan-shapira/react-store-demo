@@ -43,7 +43,8 @@ const fillSignupForm = async (user: UserEvent, values: Partial<typeof validSignu
   for (const [field, label] of Object.entries(signupLabels)) {
     const value = data[field as keyof typeof data];
     if (value) {
-      // Pasting fills a field in one event; typing six fields key by key was slow enough to time out under load
+      // user.paste fills a field in one event, while user.type fires events for every character,
+      // which makes filling six fields slow
       await user.click(screen.getByLabelText(label));
       await user.paste(value);
     }
