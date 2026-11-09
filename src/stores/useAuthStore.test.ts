@@ -468,5 +468,56 @@ describe("useAuthStore", () => {
       const { token, user } = useAuthStore.getState();
       expect({ token, user }).toEqual({ token: "old-token", user: storedUser });
     });
+
+    describe("when localStorage fails", () => {
+      const quotaExceeded = () =>
+        new DOMException("The quota has been exceeded.", "QuotaExceededError");
+
+      beforeEach(() => {
+        vi.spyOn(console, "error").mockImplementation(() => {});
+      });
+
+      it("should save the session without the profile picture when the storage is full", () => {
+        vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
+          throw quotaExceeded();
+        });
+
+        loggedIn({ image: "data:image/jpeg;base64,abc" });
+
+        expect(readPersisted().state).toEqual({ token: "test-token", user: storedUser });
+      });
+
+      it("should keep the profile picture in the current session when it cannot be saved", () => {
+        vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
+          throw quotaExceeded();
+        });
+
+        loggedIn({ image: "data:image/jpeg;base64,abc" });
+
+        expect(useAuthStore.getState().user?.image).toBe("data:image/jpeg;base64,abc");
+      });
+
+      it("should still log out and clear the cart when nothing can be saved", () => {
+        loggedIn();
+        useCartStore.setState({ items: { 1: createCartItem(1, 2) } });
+        const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+          throw new DOMException("Access is denied.", "SecurityError");
+        });
+
+        expect(() => useAuthStore.getState().logout()).not.toThrow();
+        setItem.mockRestore();
+
+        expect(useAuthStore.getState().token).toBeNull();
+        expect(useCartStore.getState().items).toEqual({});
+      });
+
+      it("should start signed out when the saved session is not valid JSON", async () => {
+        localStorage.setItem("auth-storage", "{not json");
+
+        await useAuthStore.persist.rehydrate();
+
+        expect(useAuthStore.getState().token).toBeNull();
+      });
+    });
   });
 });

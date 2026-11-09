@@ -1,9 +1,10 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, type StorageValue } from "zustand/middleware";
 import type { SigninData, SignupData, User } from "../types";
 import { fetchAuthUser, loginUser } from "../api/auth";
 import { useCartStore } from "./useCartStore";
 import { getErrorMessage } from "../utils/errors";
+import { createSafeStorage } from "../utils/safeStorage";
 
 interface AuthState {
   token: string | null;
@@ -21,6 +22,17 @@ interface AuthState {
 // DummyJSON has no real sign up endpoint (see "Known limitations" in the README),
 // so signup imitates a request with a short delay, which also shows the loading state
 const SIGNUP_DELAY_MS = 2000;
+
+// The part of the state that is saved between visits
+type PersistedAuth = Pick<AuthState, "token" | "user">;
+
+// The profile picture is by far the largest field, so when the storage is full the session is
+// saved without it. The picture stays in the current session; JSON.stringify leaves out
+// fields whose value is undefined.
+const withoutProfilePicture = (value: StorageValue<PersistedAuth>): StorageValue<PersistedAuth> => {
+  const { user } = value.state;
+  return { ...value, state: { ...value.state, user: user && { ...user, image: undefined } } };
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -94,11 +106,12 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
+      storage: createSafeStorage(withoutProfilePicture),
       version: 1,
       partialize: (state) => ({ token: state.token, user: state.user }),
       // version and migrate let a future change to the saved shape convert old data when it loads.
       // Data saved before versioning (version 0) already has the current shape, so it is kept as is
-      migrate: (persistedState) => persistedState as Pick<AuthState, "token" | "user">,
+      migrate: (persistedState) => persistedState as PersistedAuth,
     }
   )
 );

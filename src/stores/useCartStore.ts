@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { CartItem } from "../types";
+import { createSafeStorage } from "../utils/safeStorage";
 
 interface CartState {
   // Items keyed by product id
@@ -14,67 +15,77 @@ interface CartState {
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set, get) => ({
-      items: {},
-
-      addItem: (product) => {
-        const currentItems = get().items;
-        const productId = product.id;
-        const existingItem = currentItems[productId];
-
-        if (existingItem) {
-          set({
-            items: {
-              ...currentItems,
-              [productId]: {
-                ...existingItem,
-                quantity: existingItem.quantity + product.quantity,
-              },
-            },
-          });
-        } else {
-          set({
-            items: {
-              ...currentItems,
-              [productId]: product,
-            },
-          });
-        }
-      },
-
-      removeItem: (productId) => {
+    (set, get) => {
+      const removeItemFromCart = (productId: number) => {
         const currentItems = { ...get().items };
         delete currentItems[productId];
         set({ items: currentItems });
-      },
+      };
+      return {
+        items: {},
 
-      updateQuantity: (productId, quantity) => {
-        const currentItems = get().items;
-        if (quantity <= 0) {
-          // A quantity of 0 or less removes the product
-          const updatedItems = { ...currentItems };
-          delete updatedItems[productId];
-          set({ items: updatedItems });
-          return;
-        }
+        addItem: (product) => {
+          const currentItems = get().items;
+          const productId = product.id;
+          const existingItem = currentItems[productId];
 
-        if (currentItems[productId]) {
-          set({
-            items: {
-              ...currentItems,
-              [productId]: {
-                ...currentItems[productId],
-                quantity,
+          if (existingItem) {
+            set({
+              items: {
+                ...currentItems,
+                [productId]: {
+                  ...existingItem,
+                  quantity: existingItem.quantity + product.quantity,
+                },
               },
-            },
-          });
-        }
-      },
+            });
+          } else {
+            set({
+              items: {
+                ...currentItems,
+                [productId]: product,
+              },
+            });
+          }
+        },
 
-      clearCart: () => set({ items: {} }),
-    }),
+        // removeItem: (productId) => {
+        //   const currentItems = { ...get().items };
+        //   delete currentItems[productId];
+        //   set({ items: currentItems });
+        // },
+        removeItem: removeItemFromCart,
+
+        updateQuantity: (productId, quantity) => {
+          const currentItems = get().items;
+          if (quantity <= 0) {
+            // A quantity of 0 or less removes the product
+            // const updatedItems = { ...currentItems };
+            // delete updatedItems[productId];
+            // set({ items: updatedItems });
+            removeItemFromCart(productId);
+            return;
+          }
+
+          if (currentItems[productId]) {
+            set({
+              items: {
+                ...currentItems,
+                [productId]: {
+                  ...currentItems[productId],
+                  quantity,
+                },
+              },
+            });
+          }
+        },
+
+        clearCart: () => set({ items: {} }),
+      };
+    },
     {
       name: "cart-storage",
+      storage: createSafeStorage<Pick<CartState, "items">>(),
       version: 1,
       partialize: (state) => ({ items: state.items }),
       // version and migrate let a future change to the saved shape convert old data when it loads.
