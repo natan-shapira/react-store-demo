@@ -7,6 +7,7 @@ function HomePage() {
   const headingRef = usePageMeta("Products");
   const [searchParams, setSearchParams] = useSearchParams();
   const categorySlug = searchParams.get("category");
+  // Replacing all the search params also drops ?page, so a new category starts on its first page
   const handleSelectCategory = (slug: string | null) => {
     setSearchParams(slug ? { category: slug } : {});
   };

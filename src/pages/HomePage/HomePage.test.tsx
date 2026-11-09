@@ -122,4 +122,21 @@ describe("HomePage", () => {
     expect(screen.getByText("Red Lipstick")).toBeInTheDocument();
     expect(screen.getByText("MacBook Pro")).toBeInTheDocument();
   });
+
+  it("should start a newly selected category on its first page", async () => {
+    // Enough products for page 3 to exist, so the page is not corrected before the click
+    vi.mocked(useProductsList).mockReturnValue({
+      data: { products: [lipstick], total: 100 },
+      isLoading: false,
+      isPlaceholderData: false,
+      error: null,
+    } as unknown as ReturnType<typeof useProductsList>);
+    const { user } = renderHomePage("/?category=beauty&page=3");
+    expect(useProductsList).toHaveBeenLastCalledWith("beauty", 2);
+
+    await user.click(screen.getByRole("button", { name: "Laptops" }));
+
+    expect(getSearch()).toBe("?category=laptops");
+    expect(useProductsList).toHaveBeenLastCalledWith("laptops", 0);
+  });
 });

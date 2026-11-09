@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProductsList from "./ProductsList";
 import { useProductsList } from "../../api/products";
@@ -23,19 +23,39 @@ const mockQuery = (overrides: Record<string, unknown> = {}) =>
     ...overrides,
   } as unknown as ReturnType<typeof useProductsList>);
 
-const listTree = (category: string | null) => (
-  <MemoryRouter>
-    <ProductsList category={category} />
-  </MemoryRouter>
-);
-
-const renderList = (category: string | null = null) => {
-  const user = userEvent.setup();
-  const { rerender } = render(listTree(category));
-  return { user, rerender: (next: string | null) => rerender(listTree(next)) };
+const LocationDisplay = () => {
+  const { pathname, search } = useLocation();
+  return <div data-testid="location">{pathname + search}</div>;
 };
 
+const BackButton = () => {
+  const navigate = useNavigate();
+  return (
+    <button type="button" onClick={() => void navigate(-1)}>
+      Back
+    </button>
+  );
+};
+
+// entries is the browser history; the list starts on the last one
+const renderList = ({
+  category = null,
+  entries = ["/"],
+}: { category?: string | null; entries?: string[] } = {}) => {
+  const user = userEvent.setup();
+  render(
+    <MemoryRouter initialEntries={entries} initialIndex={entries.length - 1}>
+      <ProductsList category={category} />
+      <LocationDisplay />
+      <BackButton />
+    </MemoryRouter>
+  );
+  return { user };
+};
+
+const getLocation = () => screen.getByTestId("location").textContent;
 const getPagination = () => screen.getByRole("navigation", { name: "Pagination" });
+const getPageButton = (page: string) => within(getPagination()).getByRole("button", { name: page });
 
 const mockScrollTo = () => vi.spyOn(window, "scrollTo").mockImplementation(() => {});
 
@@ -84,7 +104,7 @@ describe("ProductsList", () => {
     });
 
     it("should request the products of the given category", () => {
-      renderList("beauty");
+      renderList({ category: "beauty" });
 
       expect(useProductsList).toHaveBeenLastCalledWith("beauty", 0);
     });
@@ -106,18 +126,64 @@ describe("ProductsList", () => {
       expect(within(pagination).queryByRole("button", { name: "4" })).not.toBeInTheDocument();
     });
 
-    it("should request the next page when a page is selected", async () => {
+    it("should request the selected page and keep it in the URL", async () => {
       const { user } = renderList();
 
-      await user.click(within(getPagination()).getByRole("button", { name: "2" }));
+      await user.click(getPageButton("2"));
 
       expect(useProductsList).toHaveBeenLastCalledWith(null, 1);
+      expect(getLocation()).toBe("/?page=2");
+      expect(getPageButton("2")).toHaveAttribute("aria-current", "page");
+    });
+
+    it("should start on the page given in the URL", () => {
+      renderList({ entries: ["/?page=3"] });
+
+      expect(useProductsList).toHaveBeenLastCalledWith(null, 2);
+      expect(getPageButton("3")).toHaveAttribute("aria-current", "page");
+    });
+
+    it("should leave the page out of the URL for the first page", async () => {
+      const { user } = renderList({ entries: ["/?page=3"] });
+
+      await user.click(getPageButton("1"));
+
+      expect(getLocation()).toBe("/");
+    });
+
+    it("should keep the other search params when the page changes", async () => {
+      const { user } = renderList({ category: "beauty", entries: ["/?category=beauty"] });
+
+      await user.click(getPageButton("2"));
+
+      expect(getLocation()).toBe("/?category=beauty&page=2");
+    });
+
+    it.each(["-2", "0", "1.5", "abc"])("should treat ?page=%s as the first page", (value) => {
+      renderList({ entries: [`/?page=${value}`] });
+
+      expect(useProductsList).toHaveBeenLastCalledWith(null, 0);
+    });
+
+    it("should show the last page instead of a page past the end", () => {
+      renderList({ entries: ["/?page=99"] });
+
+      expect(getLocation()).toBe("/?page=3");
+      expect(useProductsList).toHaveBeenLastCalledWith(null, 2);
+    });
+
+    it("should not keep a page past the end in the browser history", async () => {
+      const { user } = renderList({ entries: ["/start", "/?page=99"] });
+
+      await user.click(screen.getByRole("button", { name: "Back" }));
+
+      expect(getLocation()).toBe("/start");
     });
 
     it("should scroll to the top when the page changes", async () => {
       const { user } = renderList();
 
-      await user.click(within(getPagination()).getByRole("button", { name: "Next" }));
+      await user.click(getPageButton("Next"));
 
       expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
     });
@@ -129,16 +195,6 @@ describe("ProductsList", () => {
       within(getPagination())
         .getAllByRole("button")
         .forEach((button) => expect(button).toBeDisabled());
-    });
-
-    it("should go back to the first page when the category changes", async () => {
-      const { user, rerender } = renderList(null);
-      await user.click(within(getPagination()).getByRole("button", { name: "3" }));
-      expect(useProductsList).toHaveBeenLastCalledWith(null, 2);
-
-      rerender("beauty");
-
-      expect(useProductsList).toHaveBeenLastCalledWith("beauty", 0);
     });
   });
 });

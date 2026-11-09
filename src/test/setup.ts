@@ -15,8 +15,6 @@ afterEach(async () => {
   // before each test file registers its vi.mock calls, so those mocks would silently not apply
   const { useAuthStore } = await import("../stores/useAuthStore");
   const { useCartStore } = await import("../stores/useCartStore");
-
-  // Reset the Zustand stores to their initial state
   useAuthStore.setState({ token: null, user: null, error: null, isLoading: false });
   useCartStore.getState().clearCart();
 });

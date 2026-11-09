@@ -49,20 +49,12 @@ export const useCartStore = create<CartState>()(
           }
         },
 
-        // removeItem: (productId) => {
-        //   const currentItems = { ...get().items };
-        //   delete currentItems[productId];
-        //   set({ items: currentItems });
-        // },
         removeItem: removeItemFromCart,
 
         updateQuantity: (productId, quantity) => {
           const currentItems = get().items;
           if (quantity <= 0) {
             // A quantity of 0 or less removes the product
-            // const updatedItems = { ...currentItems };
-            // delete updatedItems[productId];
-            // set({ items: updatedItems });
             removeItemFromCart(productId);
             return;
           }
