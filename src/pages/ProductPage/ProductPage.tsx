@@ -1,4 +1,4 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useProduct } from "../../api/products";
 import { useCartItemQuantity, useCartStore } from "../../stores/useCartStore";
 import { ShoppingBag, ArrowLeft, CheckCircle2 } from "lucide-react";
@@ -8,6 +8,7 @@ import QuantitySelector from "../../components/QuantitySelector/QuantitySelector
 import { ProductSkeleton } from "../../components/PageSkeletons/PageSkeletons";
 import QueryError from "../../components/QueryError/QueryError";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useCanGoBack } from "../../hooks/useCanGoBack";
 
 function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,9 +16,9 @@ function ProductPage() {
   const { data: product, isLoading, error, refetch } = useProduct(id!);
   const headingRef = usePageMeta(product?.title ?? "Product");
 
-  const location = useLocation();
-  // React Router gives the first history entry the key "default", so there is no in-app page to go back to
-  const goBack = () => (location.key === "default" ? navigate("/") : navigate(-1));
+  const canGoBack = useCanGoBack();
+  // Without an in-app page to return to, "back" leads to the catalog instead of leaving the site
+  const goBack = () => (canGoBack ? navigate(-1) : navigate("/"));
 
   const addToCart = useCartStore((state) => state.addItem);
   const { quantity, increase, decrease } = useQuantity();

@@ -1,12 +1,12 @@
 import { ArrowLeft, House, SearchX } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useCanGoBack } from "../../hooks/useCanGoBack";
 
 function NotFoundPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  // React Router gives the first history entry the key "default", so there is nowhere to go back to
-  const canGoBack = location.key !== "default";
+  const canGoBack = useCanGoBack();
   const headingRef = usePageMeta("Page not found");
 
   return (
