@@ -5,11 +5,15 @@
 Sign-in is handled by the [DummyJSON auth API](https://dummyjson.com/docs/auth), so only users that exist in DummyJSON can sign in.
 The accounts below were verified against `POST https://dummyjson.com/auth/login`.
 
-| Username   | Password       | Name             |
-| ---------- | -------------- | ---------------- |
-| `emilys`   | `emilyspass`   | Emily Johnson    |
-| `michaelw` | `michaelwpass` | Michael Williams |
-| `sophiab`  | `sophiabpass`  | Sophia Brown     |
+| Username   | Password       | Name             | Role    |
+| ---------- | -------------- | ---------------- | ------- |
+| `emilys`   | `emilyspass`   | Emily Johnson    | `admin` |
+| `michaelw` | `michaelwpass` | Michael Williams | `admin` |
+| `sophiab`  | `sophiabpass`  | Sophia Brown     | `admin` |
+| `averyp`   | `averyppass`   | Avery Perez      | `user`  |
+
+Admins see an "Admin" link in the navbar and can open `/admin`; for `averyp`, `/admin` shows the "not found" page.
+The role comes from DummyJSON (`GET /auth/me`), so it cannot be chosen in the app.
 
 ## Notes
 

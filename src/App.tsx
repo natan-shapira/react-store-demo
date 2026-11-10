@@ -15,6 +15,7 @@ import {
   ProductSkeleton,
 } from "./components/PageSkeletons/PageSkeletons";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
+import AdminRoute from "./routes/AdminRoute/AdminRoute";
 
 const HomePage = lazyWithRetry(() => import("./pages/HomePage/HomePage"), "HomePage");
 const ProductPage = lazyWithRetry(() => import("./pages/ProductPage/ProductPage"), "ProductPage");
@@ -27,6 +28,17 @@ const AuthPage = lazyWithRetry(() => import("./pages/AuthPage/AuthPage"), "AuthP
 const NotFoundPage = lazyWithRetry(
   () => import("./pages/NotFoundPage/NotFoundPage"),
   "NotFoundPage"
+);
+const AdminDashboardPage = lazyWithRetry(
+  () => import("./pages/AdminDashboardPage/AdminDashboardPage"),
+  "AdminDashboardPage"
+);
+
+// The 404 page is tiny and rarely visited, so it loads without a placeholder
+const notFoundPage = (
+  <Suspense fallback={null}>
+    <NotFoundPage />
+  </Suspense>
 );
 
 const queryClient = new QueryClient({
@@ -102,16 +114,19 @@ function App() {
                       </Suspense>
                     }
                   />
+                  {/* Non-admins get "not found", so the admin pages do not reveal that they exist */}
+                  <Route element={<AdminRoute fallback={notFoundPage} />}>
+                    <Route
+                      path="/admin"
+                      element={
+                        <Suspense fallback={null}>
+                          <AdminDashboardPage />
+                        </Suspense>
+                      }
+                    />
+                  </Route>
                 </Route>
-                {/* The 404 page is tiny and rarely visited, so it loads without a placeholder */}
-                <Route
-                  path="*"
-                  element={
-                    <Suspense fallback={null}>
-                      <NotFoundPage />
-                    </Suspense>
-                  }
-                />
+                <Route path="*" element={notFoundPage} />
               </Routes>
             </PageErrorBoundary>
           </main>

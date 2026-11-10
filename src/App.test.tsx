@@ -5,7 +5,7 @@ import App from "./App";
 import { useCategories, useProduct, useProductsList } from "./api/products";
 import { useAuthStore } from "./stores/useAuthStore";
 import { useCartStore } from "./stores/useCartStore";
-import type { CartItem, Product } from "./types";
+import type { CartItem, Product, UserRole } from "./types";
 
 vi.mock("./api/products", () => ({
   PRODUCTS_PER_PAGE: 15,
@@ -31,10 +31,17 @@ const renderAt = (path: string, state?: unknown) => {
   render(<App />);
 };
 
-const logIn = () =>
+const logIn = (role?: UserRole) =>
   useAuthStore.setState({
     token: "test-token",
-    user: { id: 1, username: "emilys", email: "e@x.com", firstName: "Emily", lastName: "Johnson" },
+    user: {
+      id: 1,
+      username: "emilys",
+      email: "e@x.com",
+      firstName: "Emily",
+      lastName: "Johnson",
+      role,
+    },
   });
 
 describe("App", () => {
@@ -69,7 +76,7 @@ describe("App", () => {
       expect(await screen.findByRole("heading", { name: "Welcome Back" })).toBeInTheDocument();
     });
 
-    it.each(["/", "/products/5", "/cart", "/checkout"])(
+    it.each(["/", "/products/5", "/cart", "/checkout", "/admin"])(
       "should redirect a guest from %s to /auth",
       async (path) => {
         renderAt(path);
@@ -124,6 +131,21 @@ describe("App", () => {
       expect(window.location.pathname).toBe("/cart");
       // The cart page focuses its heading on mount, which must not pull focus out of the open dialog
       await waitFor(() => expect(dialog).toHaveFocus());
+    });
+
+    it("should show the admin dashboard at /admin to an admin", async () => {
+      logIn("admin");
+      renderAt("/admin");
+
+      expect(await screen.findByRole("heading", { name: "Admin dashboard" })).toBeInTheDocument();
+    });
+
+    it("should answer /admin with the not found page for other users", async () => {
+      logIn("user");
+      renderAt("/admin");
+
+      expect(await screen.findByRole("heading", { name: "Page not found" })).toBeInTheDocument();
+      expect(window.location.pathname).toBe("/admin");
     });
 
     it.each(["/auth", "/", "/cart"])("should render the navbar on %s", (path) => {

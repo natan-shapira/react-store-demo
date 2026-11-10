@@ -14,6 +14,7 @@ const toUser = (data: User): User => ({
   email: data.email,
   firstName: data.firstName,
   lastName: data.lastName,
+  role: data.role,
 });
 
 export const loginUser = async (credentials: SigninData): Promise<AuthUser> => {

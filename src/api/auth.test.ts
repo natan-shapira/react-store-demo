@@ -96,6 +96,20 @@ describe("auth API", () => {
       await expect(fetchAuthUser()).resolves.toEqual(publicUser);
     });
 
+    it("should return the role the server gives the user", async () => {
+      respondWith({ ...publicUser, role: "admin" });
+
+      await expect(fetchAuthUser()).resolves.toEqual({ ...publicUser, role: "admin" });
+    });
+
+    it("should treat a role the app does not know as no role", async () => {
+      respondWith({ ...publicUser, role: "superadmin" });
+
+      const user = await fetchAuthUser();
+
+      expect(user.role).toBeUndefined();
+    });
+
     it("should throw the server message when the request fails", async () => {
       respondWith({ message: "Token Expired!" }, 401);
 

@@ -46,6 +46,21 @@ describe("useAuthStore", () => {
   });
 
   describe("login", () => {
+    beforeEach(() => {
+      // login refreshes the user from /auth/me right after signing in
+      vi.mocked(fetchAuthUser).mockResolvedValue(storedUser);
+    });
+
+    it("should load the role from /auth/me after signing in", async () => {
+      vi.mocked(loginUser).mockResolvedValue(authUser);
+      vi.mocked(fetchAuthUser).mockResolvedValue({ ...storedUser, role: "admin" });
+
+      await useAuthStore.getState().login(credentials);
+
+      await vi.waitFor(() => expect(useAuthStore.getState().user?.role).toBe("admin"));
+      expect(useAuthStore.getState().isLoading).toBe(false);
+    });
+
     it("should return true on success", async () => {
       vi.mocked(loginUser).mockResolvedValue(authUser);
 
@@ -159,6 +174,7 @@ describe("useAuthStore", () => {
         email: "john@example.com",
         firstName: "John",
         lastName: "Doe",
+        role: "user",
       });
     });
 
@@ -292,6 +308,16 @@ describe("useAuthStore", () => {
       await useAuthStore.getState().checkAuth();
 
       expect(useAuthStore.getState().user?.image).toBe("data:image/jpeg;base64,abc");
+    });
+
+    it("should replace a saved role with the role from the server", async () => {
+      // e.g. a role edited by hand in localStorage
+      loggedIn({ role: "admin" });
+      vi.mocked(fetchAuthUser).mockResolvedValue({ ...storedUser, role: "user" });
+
+      await useAuthStore.getState().checkAuth();
+
+      expect(useAuthStore.getState().user?.role).toBe("user");
     });
 
     it("should not keep the image when the user id is different", async () => {

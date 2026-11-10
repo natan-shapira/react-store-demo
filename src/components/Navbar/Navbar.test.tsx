@@ -134,6 +134,20 @@ describe("Navbar", () => {
       expect(screen.queryByRole("link", { name: "Sign in / Sign up" })).not.toBeInTheDocument();
     });
 
+    it("should link to the admin dashboard for an admin", () => {
+      useAuthStore.setState({ user: { ...loggedInUser, role: "admin" } });
+      renderNavbar();
+
+      expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
+    });
+
+    it("should not show the admin link to other users", () => {
+      useAuthStore.setState({ user: { ...loggedInUser, role: "user" } });
+      renderNavbar();
+
+      expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
+    });
+
     it("should show the first letter of the first name when there is no image", () => {
       renderNavbar();
 

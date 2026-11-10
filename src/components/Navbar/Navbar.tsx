@@ -1,6 +1,15 @@
 import { Link, NavLink } from "react-router-dom";
 import { useCartStore } from "../../stores/useCartStore";
-import { AlertCircle, Camera, House, LogOut, ShoppingBag, Store, User } from "lucide-react";
+import {
+  AlertCircle,
+  Camera,
+  House,
+  LogOut,
+  ShieldCheck,
+  ShoppingBag,
+  Store,
+  User,
+} from "lucide-react";
 import { useAuthStore } from "../../stores/useAuthStore";
 import { useEffect, useRef, useState } from "react";
 import { compressImage } from "../../utils/compressImage";
@@ -82,6 +91,13 @@ function Navbar() {
               </>
             )}
           </NavLink>
+
+          {user?.role === "admin" && (
+            <NavLink to="/admin" className={navLinkClass}>
+              <ShieldCheck className="w-4 h-4" />
+              Admin
+            </NavLink>
+          )}
 
           {!user && (
             <NavLink to="/auth" className={navLinkClass}>

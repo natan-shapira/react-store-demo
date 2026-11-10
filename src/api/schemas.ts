@@ -32,6 +32,9 @@ export const userSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   image: z.string().optional(),
+  // The login response has no role, only /auth/me does. A role the app does not know is treated
+  // as no role, so a new value on the server never breaks signing in.
+  role: z.enum(["admin", "moderator", "user"]).optional().catch(undefined),
 }) satisfies z.ZodType<User>;
 
 export const dummyLoginResponseSchema = userSchema.extend({

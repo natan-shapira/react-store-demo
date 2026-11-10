@@ -24,7 +24,11 @@ export interface User {
   firstName: string;
   lastName: string;
   image?: string;
+  // Set by the server (GET /auth/me); the client never grants itself a higher role
+  role?: UserRole;
 }
+
+export type UserRole = "admin" | "moderator" | "user";
 
 export type SigninData = Pick<User, "username"> & {
   password: string;

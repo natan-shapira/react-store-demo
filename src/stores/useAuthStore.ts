@@ -46,6 +46,9 @@ export const useAuthStore = create<AuthState>()(
         try {
           const { token, ...user } = await loginUser(credentials);
           set({ token, user, isLoading: false });
+          // The login response has no role, so the user is refreshed from /auth/me straight away.
+          // Not awaited: signing in is done, and isLoading stays true until the role arrives.
+          void get().checkAuth();
           return true;
         } catch (error) {
           set({ error: getErrorMessage(error, "Login failed"), isLoading: false });
@@ -65,6 +68,7 @@ export const useAuthStore = create<AuthState>()(
             email: data.email,
             firstName: data.firstName,
             lastName: data.lastName,
+            role: "user",
           },
           isLoading: false,
         });
@@ -83,6 +87,8 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           set((state) => ({
+            // The profile picture exists only in this browser, so it is kept. Everything else,
+            // including the role, comes from the server and replaces what was saved.
             user: state.user?.id === user.id ? { ...user, image: state.user.image } : user,
             isLoading: false,
           }));

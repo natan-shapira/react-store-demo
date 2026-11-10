@@ -9,6 +9,7 @@ A storefront built with React 19 and TypeScript on top of the public [DummyJSON]
 - **Cart**: quantities, per-item selection for checkout, saved in `localStorage` across visits
 - **Checkout preview**: a read-only summary of the selected items (placing orders is not implemented yet)
 - **Authentication**: sign in through DummyJSON, protected routes, and a profile picture that is resized in the browser and stored locally
+- **Admin area**: an admin dashboard at `/admin`, shown only to users whose DummyJSON role is `admin`; everyone else gets the "not found" page
 - **Resilience**: API responses validated at runtime with Zod, retries for network and server errors only, loading skeletons, error messages with "Try again", an error boundary, and lazy-loaded pages that recover from stale chunks after a deploy
 - **Accessibility**: a page title and focused heading on every route, modals with a focus trap and accessible name and description, and quantity changes announced to screen readers
 
@@ -16,13 +17,13 @@ A storefront built with React 19 and TypeScript on top of the public [DummyJSON]
 
 ReactShop has no server of its own. All data comes from [DummyJSON](https://dummyjson.com), a free public API with fake store data, and its address is read from the `VITE_API_URL` environment variable (see [Environment variables](#environment-variables)). The app uses these endpoints:
 
-| Data               | Endpoint                                            |
-| ------------------ | --------------------------------------------------- |
-| Products, by page  | `GET /products` and `GET /products/category/{slug}` |
-| A single product   | `GET /products/{id}`                                |
-| Categories         | `GET /products/categories`                          |
-| Sign in            | `POST /auth/login`                                  |
-| The signed-in user | `GET /auth/me`                                      |
+| Data                              | Endpoint                                            |
+| --------------------------------- | --------------------------------------------------- |
+| Products, by page                 | `GET /products` and `GET /products/category/{slug}` |
+| A single product                  | `GET /products/{id}`                                |
+| Categories                        | `GET /products/categories`                          |
+| Sign in                           | `POST /auth/login`                                  |
+| The signed-in user and their role | `GET /auth/me`                                      |
 
 Because DummyJSON is a demo API, only its existing users can sign in, and nothing the app sends is saved on the server. The cart and the profile picture are stored in the browser instead.
 
@@ -54,7 +55,7 @@ Then open the URL that Vite prints and sign in with the DummyJSON demo user:
 - Username: `emilys`
 - Password: `emilyspass`
 
-More demo users are listed in [`docs/test-users.md`](docs/test-users.md).
+`emilys` is an admin, so the navbar also shows a link to the admin dashboard. More demo users, including a regular user without admin access, are listed in [`docs/test-users.md`](docs/test-users.md).
 
 ### Environment variables
 
@@ -145,7 +146,16 @@ GitHub Actions (`.github/workflows/ci.yml`) runs on every push and pull request 
 
 **The risk in the meantime is small.** The tokens belong to DummyJSON's public demo accounts and expire after 60 minutes, and React escapes all rendered text; the app never uses `dangerouslySetInnerHTML`, the most common way to open an XSS hole in a React app.
 
+### The admin role is only checked in the interface
+
+**What happens.** The role comes from DummyJSON (`GET /auth/me`, right after signing in and on every page load), and `AdminRoute` uses it to decide whether to show the admin dashboard. The role saved in `localStorage` is always replaced by the server's answer, and the client never grants itself a role.
+
+**Why this is not real protection.** Anything that runs in the browser can be changed by the user, so a check in the client only decides what the interface shows. Real protection means the server checks the role on every admin request. DummyJSON has no admin-only endpoints, so for now the admin dashboard only shows a placeholder and has nothing to protect.
+
+**Once the project has its own server**, every admin endpoint must verify the role from the session on the server side. `AdminRoute` stays as it is, to keep non-admins away from pages they cannot use.
+
 ### Other limitations
 
+- **Sign in with Google is not available.** Signing in with an external provider needs a server that verifies the provider's response and creates a session, and DummyJSON has no such endpoint.
 - **Checkout is a preview.** The order summary is shown, but delivery details and payment are not implemented, and "Place order" is disabled.
 - **The cart is stored per browser.** It lives in `localStorage` and is cleared on logout.
