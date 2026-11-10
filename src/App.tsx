@@ -16,6 +16,7 @@ import {
 } from "./components/PageSkeletons/PageSkeletons";
 import { lazyWithRetry } from "./utils/lazyWithRetry";
 import AdminRoute from "./routes/AdminRoute/AdminRoute";
+import { ADMIN_SECTIONS, AdminOverviewPage } from "./pages/AdminDashboardPage/adminSections";
 
 const HomePage = lazyWithRetry(() => import("./pages/HomePage/HomePage"), "HomePage");
 const ProductPage = lazyWithRetry(() => import("./pages/ProductPage/ProductPage"), "ProductPage");
@@ -116,6 +117,7 @@ function App() {
                   />
                   {/* Non-admins get "not found", so the admin pages do not reveal that they exist */}
                   <Route element={<AdminRoute fallback={notFoundPage} />}>
+                    {/* The layout renders the admin menu, and the matching child route in its <Outlet /> */}
                     <Route
                       path="/admin"
                       element={
@@ -123,7 +125,12 @@ function App() {
                           <AdminDashboardPage />
                         </Suspense>
                       }
-                    />
+                    >
+                      <Route index element={<AdminOverviewPage />} />
+                      {ADMIN_SECTIONS.map(({ path, Page }) => (
+                        <Route key={path} path={path} element={<Page />} />
+                      ))}
+                    </Route>
                   </Route>
                 </Route>
                 <Route path="*" element={notFoundPage} />

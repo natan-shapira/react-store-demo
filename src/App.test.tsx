@@ -6,6 +6,7 @@ import { useCategories, useProduct, useProductsList } from "./api/products";
 import { useAuthStore } from "./stores/useAuthStore";
 import { useCartStore } from "./stores/useCartStore";
 import type { CartItem, Product, UserRole } from "./types";
+import { ADMIN_SECTIONS } from "./pages/AdminDashboardPage/adminSections";
 
 vi.mock("./api/products", () => ({
   PRODUCTS_PER_PAGE: 15,
@@ -139,6 +140,17 @@ describe("App", () => {
 
       expect(await screen.findByRole("heading", { name: "Admin dashboard" })).toBeInTheDocument();
     });
+
+    it.each(ADMIN_SECTIONS)(
+      "should show the $label section at /admin/$path inside the admin menu",
+      async ({ label, path }) => {
+        logIn("admin");
+        renderAt(`/admin/${path}`);
+
+        expect(await screen.findByRole("heading", { level: 1, name: label })).toBeInTheDocument();
+        expect(screen.getByRole("navigation", { name: "Admin sections" })).toBeInTheDocument();
+      }
+    );
 
     it("should answer /admin with the not found page for other users", async () => {
       logIn("user");
