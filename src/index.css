@@ -12,3 +12,11 @@
     }
   }
 }
+
+@layer base {
+  /* usePageMeta focuses each page's h1 so screen readers start reading there. The heading is not
+     a control, so it needs no focus ring; buttons, links and fields keep theirs. */
+  h1[tabindex="-1"]:focus {
+    outline: none;
+  }
+}
