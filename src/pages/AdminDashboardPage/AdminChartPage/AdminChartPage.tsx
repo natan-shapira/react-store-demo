@@ -1,12 +1,14 @@
-import { BarChart3 } from "lucide-react";
+import type { ReactNode } from "react";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import type { AdminDataSource } from "../adminDataSource";
+import AdminChartPlaceholder from "../components/AdminChartPlaceholder/AdminChartPlaceholder";
 
 interface AdminChartPageProps {
   title: string;
   // What the chart will show and where its data comes from
   description: string;
   source: AdminDataSource;
+  children?: ReactNode;
 }
 
 const sourceLabels: Record<AdminDataSource, string> = {
@@ -14,8 +16,9 @@ const sourceLabels: Record<AdminDataSource, string> = {
   sample: "Sample data until the server is ready",
 };
 
-// The shared frame of every admin chart page; the chart itself is not built yet
-function AdminChartPage({ title, description, source }: AdminChartPageProps) {
+// The shared frame of every admin chart page: heading, data source and description, then the
+// page's own content, or a placeholder while the page has none
+function AdminChartPage({ title, description, source, children }: AdminChartPageProps) {
   const headingRef = usePageMeta(title);
 
   return (
@@ -34,10 +37,7 @@ function AdminChartPage({ title, description, source }: AdminChartPageProps) {
       </div>
       <p className="text-gray-600 mb-6">{description}</p>
 
-      <div className="flex flex-col items-center justify-center gap-2 h-80 rounded-xl border-2 border-dashed border-gray-300 bg-white text-gray-500">
-        <BarChart3 className="w-10 h-10" aria-hidden="true" />
-        <p>Chart coming soon</p>
-      </div>
+      {children ?? <AdminChartPlaceholder />}
     </section>
   );
 }
