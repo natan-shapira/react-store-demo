@@ -10,6 +10,12 @@ import { ORDER_VIEWS } from "./orderViews";
 vi.mock("../charts/BarChart/BarChart", () => ({
   default: ({ label }: { label: string }) => <div role="img" aria-label={label} />,
 }));
+vi.mock("../charts/DoughnutChart/DoughnutChart", () => ({
+  default: ({ label }: { label: string }) => <div role="img" aria-label={label} />,
+}));
+vi.mock("../charts/LineChart/LineChart", () => ({
+  default: ({ label }: { label: string }) => <div role="img" aria-label={label} />,
+}));
 
 // The views fetch their own data, so the page needs a query client
 const renderPageAt = (path: string) => {
@@ -50,7 +56,7 @@ describe("OrdersByStatusPage", () => {
   it("should show the first view when none is chosen", () => {
     renderPageAt("/admin/orders");
 
-    expect(within(getViewNav()).getByRole("link", { name: "Per status" })).toHaveAttribute(
+    expect(within(getViewNav()).getByRole("link", { name: "By status" })).toHaveAttribute(
       "aria-current",
       "page"
     );
@@ -77,8 +83,8 @@ describe("OrdersByStatusPage", () => {
 
     await user.click(within(getViewNav()).getByRole("link", { name: "Over time" }));
 
-    expect(screen.getByText("Orders over time chart coming soon")).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Filters" })).toBeInTheDocument();
+    expect(await screen.findByRole("img", { name: "Orders over time" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Date range" })).toBeInTheDocument();
     expect(screen.queryByText("Orders table coming soon")).not.toBeInTheDocument();
     expect(within(getViewNav()).getByRole("link", { name: "Orders table" })).not.toHaveAttribute(
       "aria-current"

@@ -1,4 +1,3 @@
-//import { SAMPLE_ORDERS_FROM, SAMPLE_ORDERS_TO } from "../../../../api/adminSampleData";
 import type { DateRangePreset } from "./dateRange";
 import { useAdminDateRange } from "./useAdminDateRange";
 
@@ -6,17 +5,23 @@ interface AdminDateRangeFilterProps {
   earliestAllowedDate: string;
   latestAllowedDate: string;
   defaultPreset?: "day" | "week" | "month" | "year";
+  defaultFrom?: string;
+  defaultTo?: string;
 }
 
 function AdminDateRangeFilter({
   earliestAllowedDate,
   latestAllowedDate,
   defaultPreset = "month",
+  defaultFrom,
+  defaultTo,
 }: AdminDateRangeFilterProps) {
   const { selection, setPreset, setCustomRange } = useAdminDateRange({
     earliestAllowedDate,
     latestAllowedDate,
     defaultPreset,
+    defaultFrom,
+    defaultTo,
   });
 
   const PRESETS: { id: DateRangePreset; label: string }[] = [

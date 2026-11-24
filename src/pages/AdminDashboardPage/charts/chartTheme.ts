@@ -1,12 +1,9 @@
-import type { OrderStatus } from "../../../api/adminTypes";
+import type { OrderStatus, OrderStatusWithAll } from "../../../api/adminTypes";
 
-// The colors every admin chart draws with, so the same thing has the same color on every page.
-// Chart.js paints on a canvas, so these are CSS color values, not Tailwind class names.
+// CSS colors for Chart.js canvas (not Tailwind class names)
 
-// CSS color Chart.js paints bars, slices and lines with
 export type ChartColor = string;
 
-// For series with no meaning of their own, e.g. product categories; chartColor() repeats it
 export const CHART_PALETTE: readonly [ChartColor, ...ChartColor[]] = [
   "#2563eb", // blue-600
   "#059669", // emerald-600
@@ -18,15 +15,29 @@ export const CHART_PALETTE: readonly [ChartColor, ...ChartColor[]] = [
   "#64748b", // slate-500
 ];
 
-// The color of the series at the given position; after the last color the palette starts over
 export const chartColor = (index: number): ChartColor =>
   CHART_PALETTE[index % CHART_PALETTE.length] ?? CHART_PALETTE[0];
 
-// Every order status keeps its color in every order view. Colors only support the labels:
-// a chart must also name each status, for people who cannot tell the colors apart.
 export const ORDER_STATUS_COLORS: Record<OrderStatus, ChartColor> = {
   pending: "#f59e0b", // amber-500
   shipped: "#2563eb", // blue-600
   delivered: "#059669", // emerald-600
   cancelled: "#dc2626", // red-600
+};
+
+export const SERIES_COLORS_WITH_ALL: Record<OrderStatusWithAll, ChartColor> = {
+  all: "#64748b", // slate-500
+  ...ORDER_STATUS_COLORS,
+};
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: "Pending",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
+
+export const ORDER_STATUS_LABELS_WITH_ALL: Record<OrderStatusWithAll, string> = {
+  all: "All",
+  ...ORDER_STATUS_LABELS,
 };

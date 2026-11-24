@@ -50,6 +50,15 @@ const eachDate = (from: string, to: string): string[] => {
   return dates;
 };
 
+// Spread purchases across waking hours so a single-day line chart has several X points
+const hourFor = (orderIndex: number, day: number, weekday: number): number => {
+  // 08:00–22:00 UTC, stepped so same-day orders land on different hours
+  return 8 + ((orderIndex * 5 + day + weekday) % 15);
+};
+
+const toIsoDateTime = (day: string, hour: number): string =>
+  `${day}T${String(hour).padStart(2, "0")}:00:00.000Z`;
+
 // Builds one order list that Over time, status charts and the orders table can all filter by date.
 // Every day in the window has at least two orders, so short ranges (7 / 30 days) always show data.
 // An empty result is still possible later by picking a range outside SAMPLE_ORDERS_FROM..TO.
@@ -57,25 +66,25 @@ const buildSampleOrders = (): SampleOrder[] => {
   const orders: SampleOrder[] = [];
   let id = 1;
 
-  for (const date of eachDate(SAMPLE_ORDERS_FROM, SAMPLE_ORDERS_TO)) {
-    const day = Number(date.slice(8, 10));
-    const weekday = new Date(`${date}T00:00:00.000Z`).getUTCDay(); // 0 = Sunday
+  for (const day of eachDate(SAMPLE_ORDERS_FROM, SAMPLE_ORDERS_TO)) {
+    const dayNum = Number(day.slice(8, 10));
+    const weekday = new Date(`${day}T00:00:00.000Z`).getUTCDay(); // 0 = Sunday
     const isWeekend = weekday === 0 || weekday === 6;
-    const isMonthEnd = day >= 28;
+    const isMonthEnd = dayNum >= 28;
 
     // Base 2–5 orders; weekends +1, month end +2
-    let ordersThatDay = 2 + (day % 4);
+    let ordersThatDay = 2 + (dayNum % 4);
     if (isWeekend) ordersThatDay += 1;
     if (isMonthEnd) ordersThatDay += 2;
 
     for (let i = 0; i < ordersThatDay; i++) {
-      const seed = id * 17 + day * 3 + weekday;
+      const seed = id * 17 + dayNum * 3 + weekday;
       const total = 20 + (seed % 180) + (seed % 7) / 100;
       const discount = (seed % 15) / 100;
       const order: SampleOrder = {
         id,
         userId: 1 + (seed % 48),
-        date,
+        date: toIsoDateTime(day, hourFor(i, dayNum, weekday)),
         status: statusFor(seed),
         itemCount: 1 + (seed % 6),
         total: Math.round(total * 100) / 100,

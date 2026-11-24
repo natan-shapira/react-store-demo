@@ -1,15 +1,22 @@
 import { useSearchParams } from "react-router-dom";
 import {
   clampRange,
+  isDateRangePreset,
+  isValidDateString,
+  isValidRange,
   rangeForPreset,
+  type DateRange,
   type DateRangePreset,
   type DateRangeSelection,
 } from "./dateRange";
 
 interface UseAdminDateRangeOptions {
-  earliestAllowedDate: string; // התאריך המינימלי המותר במערכת (למשל SAMPLE_ORDERS_FROM)
-  latestAllowedDate: string; // התאריך המקסימלי/עוגן המותר במערכת (למשל SAMPLE_ORDERS_TO)
-  defaultPreset?: Exclude<DateRangePreset, "custom">; // למשל "month"
+  earliestAllowedDate: string;
+  latestAllowedDate: string;
+  defaultPreset?: Exclude<DateRangePreset, "custom">;
+  // Used when the URL has no valid from/to (or as custom fallback)
+  defaultFrom?: string;
+  defaultTo?: string;
 }
 
 interface UseAdminDateRangeResult {
@@ -18,34 +25,67 @@ interface UseAdminDateRangeResult {
   setCustomRange: (range: DateRangeSelection) => void;
 }
 
+const resolveDay = (
+  value: string | null | undefined,
+  fallback: string,
+  earliestAllowedDate: string,
+  latestAllowedDate: string
+): string => {
+  const candidate = value && isValidDateString(value) ? value : fallback;
+  const safeFallback = isValidDateString(fallback) ? fallback : latestAllowedDate;
+  const day = isValidDateString(candidate) ? candidate : safeFallback;
+  return clampRange({ from: day, to: day }, earliestAllowedDate, latestAllowedDate).from;
+};
+
 export function useAdminDateRange({
   earliestAllowedDate,
   latestAllowedDate,
   defaultPreset = "month",
+  defaultFrom,
+  defaultTo,
 }: UseAdminDateRangeOptions): UseAdminDateRangeResult {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // 1. קריאת הפרמטרים מתוך ה־URL או שימוש בברירת המחדל
-  const presetParam = (searchParams.get("range") as DateRangePreset) || defaultPreset;
+  const presetParam = searchParams.get("range");
+  const preset: DateRangePreset =
+    presetParam && isDateRangePreset(presetParam) ? presetParam : defaultPreset;
+
+  const presetDefaults = clampRange(
+    rangeForPreset(defaultPreset, latestAllowedDate),
+    earliestAllowedDate,
+    latestAllowedDate
+  );
+  const fallbackFrom = resolveDay(
+    defaultFrom,
+    presetDefaults.from,
+    earliestAllowedDate,
+    latestAllowedDate
+  );
+  const fallbackTo = resolveDay(
+    defaultTo,
+    presetDefaults.to,
+    earliestAllowedDate,
+    latestAllowedDate
+  );
+
   const urlFrom = searchParams.get("from");
   const urlTo = searchParams.get("to");
+  const urlRange: DateRange | null =
+    urlFrom && urlTo && isValidRange({ from: urlFrom, to: urlTo })
+      ? { from: urlFrom, to: urlTo }
+      : null;
 
   let currentFrom: string;
   let currentTo: string;
 
-  if (presetParam !== "custom" && (!urlFrom || !urlTo)) {
-    // חישוב אוטומטי מבוסס פריסט ביחס לתאריך המקסימלי המותר (העוגן)
-    const calculatedRange = rangeForPreset(presetParam, latestAllowedDate);
+  if (preset !== "custom" && !urlRange) {
+    const calculatedRange = rangeForPreset(preset, latestAllowedDate);
     const clampedCalculated = clampRange(calculatedRange, earliestAllowedDate, latestAllowedDate);
     currentFrom = clampedCalculated.from;
     currentTo = clampedCalculated.to;
   } else {
     const clampedUrlRange = clampRange(
-      // מה המטרה של clampRange אם כבר יש לנו את earliestAllowedDate ו-latestAllowedDate? האם זה כדי לוודא שהטווח מה-URL לא חורג מהגבולות המותרים?
-      {
-        from: urlFrom || latestAllowedDate,
-        to: urlTo || latestAllowedDate,
-      },
+      urlRange ?? { from: fallbackFrom, to: fallbackTo },
       earliestAllowedDate,
       latestAllowedDate
     );
@@ -54,7 +94,7 @@ export function useAdminDateRange({
   }
 
   const selection: DateRangeSelection = {
-    preset: presetParam,
+    preset,
     from: currentFrom,
     to: currentTo,
   };
@@ -64,24 +104,24 @@ export function useAdminDateRange({
     newParams.set("range", newPreset);
     if (newPreset !== "custom") {
       const calculatedRange = rangeForPreset(newPreset, latestAllowedDate);
-      const clampedRange = clampRange(calculatedRange, earliestAllowedDate, latestAllowedDate);
-      newParams.set("from", clampedRange.from);
-      newParams.set("to", clampedRange.to);
-    } else {
-      if (!newParams.get("from") || !newParams.get("to")) {
-        newParams.set("from", selection.from);
-        newParams.set("to", selection.to);
-      }
+      const clamped = clampRange(calculatedRange, earliestAllowedDate, latestAllowedDate);
+      newParams.set("from", clamped.from);
+      newParams.set("to", clamped.to);
+    } else if (!urlRange) {
+      newParams.set("from", selection.from);
+      newParams.set("to", selection.to);
     }
     setSearchParams(newParams);
   };
 
   const setCustomRange = (customRangeSelection: DateRangeSelection) => {
-    const clampedCustomRange = clampRange(
-      { from: customRangeSelection.from, to: customRangeSelection.to },
-      earliestAllowedDate,
-      latestAllowedDate
-    );
+    const raw = {
+      from: isValidDateString(customRangeSelection.from)
+        ? customRangeSelection.from
+        : selection.from,
+      to: isValidDateString(customRangeSelection.to) ? customRangeSelection.to : selection.to,
+    };
+    const clampedCustomRange = clampRange(raw, earliestAllowedDate, latestAllowedDate);
     const newParams = new URLSearchParams(searchParams);
     newParams.set("range", "custom");
     newParams.set("from", clampedCustomRange.from);

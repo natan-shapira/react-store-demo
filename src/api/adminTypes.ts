@@ -3,8 +3,10 @@
 // some IDEs fail to resolve (e.g. "Unsafe member access .status on a type that cannot be resolved").
 
 export const ORDER_STATUSES = ["pending", "shipped", "delivered", "cancelled"] as const;
+export const ORDER_STATUSES_WITH_ALL = ["all", ...ORDER_STATUSES] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+export type OrderStatusWithAll = (typeof ORDER_STATUSES_WITH_ALL)[number];
 
 export interface OrderStatusCount {
   status: OrderStatus;
@@ -14,7 +16,7 @@ export interface OrderStatusCount {
 export interface SampleOrder {
   id: number;
   userId: number;
-  // "YYYY-MM-DD", e.g. "2026-11-03"
+  // ISO purchase time, e.g. "2026-11-03T14:00:00.000Z" — hour precision feeds single-day line charts
   date: string;
   status: OrderStatus;
   itemCount: number;

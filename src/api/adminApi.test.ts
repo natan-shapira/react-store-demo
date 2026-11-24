@@ -189,11 +189,19 @@ describe("admin API", () => {
     it("should use sample data in the shape the server will return", () => {
       expect(sampleOrdersSchema.safeParse(SAMPLE_ORDERS).success).toBe(true);
       expect(SAMPLE_ORDERS.length).toBeGreaterThan(1000);
-      expect(SAMPLE_ORDERS[0]?.date).toBe("2025-11-01");
-      expect(SAMPLE_ORDERS.at(-1)?.date).toBe("2026-11-15");
+      expect(SAMPLE_ORDERS[0]?.date.startsWith("2025-11-01T")).toBe(true);
+      expect(SAMPLE_ORDERS.at(-1)?.date.startsWith("2026-11-15T")).toBe(true);
       // Every calendar day in the window has at least one order, so short ranges still show data
-      const daysWithOrders = new Set(SAMPLE_ORDERS.map((order) => order.date));
+      const daysWithOrders = new Set(SAMPLE_ORDERS.map((order) => order.date.slice(0, 10)));
       expect(daysWithOrders.size).toBeGreaterThan(360);
+      // Same-day orders use different hours so a one-day line chart has more than one X point
+      const firstDay = SAMPLE_ORDERS[0]?.date.slice(0, 10);
+      const hoursOnFirstDay = new Set(
+        SAMPLE_ORDERS.filter((order) => order.date.startsWith(`${firstDay}T`)).map((order) =>
+          order.date.slice(11, 13)
+        )
+      );
+      expect(hoursOnFirstDay.size).toBeGreaterThan(1);
     });
   });
 

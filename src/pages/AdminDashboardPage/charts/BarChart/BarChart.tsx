@@ -10,29 +10,22 @@ import {
   type TooltipItem,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { chartColor, type ChartColor } from "../chartTheme";
+import ChartFrame from "../ChartFrame";
+import { chartColor } from "../chartTheme";
+import { defaultChartFormat, type ChartDataPoint } from "../chartTypes";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
-export interface BarChartDataPoint {
-  label: string;
-  value: number;
-  // Leave out for series with no color of their own; the bar then takes chartColor(index)
-  color?: ChartColor;
-}
+export type { ChartDataPoint as BarChartDataPoint };
 
 export interface BarChartProps {
-  data: readonly BarChartDataPoint[];
+  data: readonly ChartDataPoint[];
   // Names the chart for screen readers, e.g. "Orders per status"
   label: string;
   formatValue?: (value: number) => string;
 }
 
-const defaultFormat = (value: number) => value.toLocaleString("en-US");
-
-// Turns the generic bar points into what Chart.js expects; kept here so pages and transforms
-// never import Chart.js
-const toChartData = (data: readonly BarChartDataPoint[]): ChartData<"bar"> => ({
+const toChartData = (data: readonly ChartDataPoint[]): ChartData<"bar"> => ({
   labels: data.map((point) => point.label),
   datasets: [
     {
@@ -70,28 +63,16 @@ const toChartOptions = (formatValue: (value: number) => string): ChartOptions<"b
   },
 });
 
-// Generic vertical bar chart: receives data already shaped for it and only draws it
-function BarChart({ data, label, formatValue = defaultFormat }: BarChartProps) {
-  if (data.length === 0) {
-    return (
-      <figure
-        aria-label={label}
-        className="flex items-center justify-center h-80 p-6 bg-white rounded-xl border border-gray-200 text-gray-500"
-      >
-        <p>No data to show</p>
-      </figure>
-    );
-  }
-
+function BarChart({ data, label, formatValue = defaultChartFormat }: BarChartProps) {
   return (
-    <figure aria-label={label} className="h-80 p-6 bg-white rounded-xl border border-gray-200">
+    <ChartFrame label={label} isEmpty={data.length === 0}>
       <Bar
         aria-label={label}
         role="img"
         data={toChartData(data)}
         options={toChartOptions(formatValue)}
       />
-    </figure>
+    </ChartFrame>
   );
 }
 
